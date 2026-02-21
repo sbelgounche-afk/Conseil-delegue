@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📷</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Auth Screen -->
+    <div id="auth-screen" class="screen active">
+        <div class="auth-container">
+            <div class="auth-box">
+                <h1 class="instagram-logo">Instagram</h1>
+                <form id="login-form">
+                    <input type="text" id="login-username" placeholder="Phone number, username, or email" required>
+                    <input type="password" id="login-password" placeholder="Password" required>
+                    <button type="submit" class="btn-primary">Log in</button>
+                </form>
+                <div class="divider">
+                    <span>OR</span>
+                </div>
+                <button class="btn-facebook">
+                    <i class="fab fa-facebook-square"></i> Log in with Facebook
+                </button>
+                <a href="#" class="forgot-password">Forgot password?</a>
+            </div>
+            <div class="auth-box signup-box">
+                <p>Don't have an account? <a href="#" id="show-signup">Sign up</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signup Screen -->
+    <div id="signup-screen" class="screen">
+        <div class="auth-container">
+            <div class="auth-box">
+                <h1 class="instagram-logo">Instagram</h1>
+                <p class="signup-subtitle">Sign up to see photos and videos from your friends.</p>
+                <form id="signup-form">
+                    <input type="text" id="signup-email" placeholder="Mobile Number or Email" required>
+                    <input type="text" id="signup-fullname" placeholder="Full Name" required>
+                    <input type="text" id="signup-username" placeholder="Username" required>
+                    <input type="text" id="signup-phone" placeholder="Phone Number">
+                    <input type="number" id="signup-age" placeholder="Age" min="6" max="25">
+                    <select id="signup-grade">
+                        <option value="">Select Grade / Niveau</option>
+                        <option value="1ère année collège">1ère année collège</option>
+                        <option value="2ème année collège">2ème année collège</option>
+                        <option value="3ème année collège">3ème année collège</option>
+                        <option value="1ère année bac">1ère année bac</option>
+                        <option value="2ème année bac">2ème année bac</option>
+                    </select>
+                    <input type="text" id="signup-school" placeholder="School / École">
+                    <input type="password" id="signup-password" placeholder="Password" required>
+                    <button type="submit" class="btn-primary">Sign up</button>
+                </form>
+                <p class="terms">People who use our service may have uploaded your contact information to Instagram. <a href="#">Learn More</a></p>
+                <p class="terms">By signing up, you agree to our <a href="#">Terms</a>, <a href="#">Privacy Policy</a> and <a href="#">Cookies Policy</a>.</p>
+            </div>
+            <div class="auth-box signup-box">
+                <p>Have an account? <a href="#" id="show-login">Log in</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="main-app" class="screen">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="instagram-logo">Instagram</h1>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-view="home">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="#" class="nav-item" data-view="search">
+                    <i class="fas fa-search"></i>
+                    <span>Search</span>
+                </a>
+                <a href="#" class="nav-item" data-view="explore">
+                    <i class="fas fa-compass"></i>
+                    <span>Explore</span>
+                </a>
+                <a href="#" class="nav-item" data-view="messages">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Messages</span>
+                    <span class="notification-badge" id="message-badge">5</span>
+                </a>
+                <a href="#" class="nav-item" data-view="notifications">
+                    <i class="far fa-heart"></i>
+                    <span>Notifications</span>
+                    <span class="notification-badge" id="notif-badge">3</span>
+                </a>
+                <a href="#" class="nav-item" data-view="create">
+                    <i class="far fa-plus-square"></i>
+                    <span>Create</span>
+                </a>
+                <a href="#" class="nav-item" data-view="profile">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100" alt="Profile" class="nav-profile-img" id="current-user-avatar">
+                    <span>Profile</span>
+                </a>
+                <a href="#" class="nav-item" data-view="admin" id="admin-nav-item" style="display:none;">
+                    <i class="fas fa-cogs"></i>
+                    <span>Admin</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" class="nav-item" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Log out</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Home View -->
+            <div id="home-view" class="view active">
+                <!-- Stories -->
+                <div class="stories-container">
+                    <div class="stories-scroll">
+                        <div class="story add-story">
+                            <div class="story-ring">
+                                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100" alt="Your Story">
+                            </div>
+                            <span>Your Story</span>
+                        </div>
+                        <div class="story">
+                            <div class="story-ring">
+                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" alt="Story">
+                            </div>
+                            <span>jennifer</span>
+                        </div>
+                        <div class="story">
+                            <div class="story-ring">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" alt="Story">
+                            </div>
+                            <span>mike_dev</span>
+                        </div>
+                        <div class="story">
+                            <div class="story-ring">
+                                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100" alt="Story">
+                            </div>
+                            <span>sarah.c</span>
+                        </div>
+                        <div class="story">
+                            <div class="story-ring">
+                                <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100" alt="Story">
+                            </div>
+                            <span>emma_w</span>
+                        </div>
+                        <div class="story">
+                            <div class="story-ring">
+                                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100" alt="Story">
+                            </div>
+                            <span>david_r</span>
+                        </div>
+                        <div class="story">
+                            <div class="story-ring">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" alt="Story">
+                            </div>
+                            <span>lisa_k</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Posts Feed -->
+                <div class="posts-container" id="posts-feed">
+                    <!-- Posts will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <!-- Search View -->
+            <div id="search-view" class="view">
+                <div class="search-header">
+                    <h2>Search</h2>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search" id="search-input">
+                    </div>
+                </div>
+                <div class="search-results" id="search-results">
+                    <div class="search-categories">
+                        <h3>Recent</h3>
+                        <div class="category-grid">
+                            <div class="category-item">
+                                <img src="https://images.unsplash.com/photo-1513721032312-6a18a42cf900?w=200" alt="Category">
+                                <span>Photography</span>
+                            </div>
+                            <div class="category-item">
+                                <img src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=200" alt="Category">
+                                <span>Travel</span>
+                            </div>
+                            <div class="category-item">
+                                <img src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=200" alt="Category">
+                                <span>Fitness</span>
+                            </div>
+                            <div class="category-item">
+                                <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?w=200" alt="Category">
+                                <span>Music</span>
+                            </div>
+                            <div class="category-item">
+                                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200" alt="Category">
+                                <span>Art</span>
+                            </div>
+                            <div class="category-item">
+                                <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=200" alt="Category">
+                                <span>Food</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Explore View -->
+            <div id="explore-view" class="view">
+                <h2>Explore</h2>
+                <div class="explore-grid" id="explore-grid">
+                    <!-- Explore posts will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <!-- Messages View -->
+            <div id="messages-view" class="view">
+                <div class="messages-container">
+                    <div class="messages-list">
+                        <h3>Messages</h3>
+                        <div class="message-item active">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" alt="User">
+                            <div class="message-info">
+                                <span class="username">jennifer</span>
+                                <span class="message-preview">Hey! How are you? 👋</span>
+                            </div>
+                        </div>
+                        <div class="message-item">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" alt="User">
+                            <div class="message-info">
+                                <span class="username">mike_dev</span>
+                                <span class="message-preview">Check out this photo!</span>
+                            </div>
+                        </div>
+                        <div class="message-item">
+                            <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100" alt="User">
+                            <div class="message-info">
+                                <span class="username">sarah.c</span>
+                                <span class="message-preview">Let's meet up soon</span>
+                            </div>
+                        </div>
+                        <div class="message-item">
+                            <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100" alt="User">
+                            <div class="message-info">
+                                <span class="username">emma_w</span>
+                                <span class="message-preview">Thanks for the follow!</span>
+                            </div>
+                        </div>
+                        <div class="message-item unread">
+                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100" alt="User">
+                            <div class="message-info">
+                                <span class="username">david_r</span>
+                                <span class="message-preview">New post! Check it out 🎉</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-area">
+                        <div class="chat-header">
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" alt="User">
+                            <span>jennifer</span>
+                        </div>
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="message received">
+                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" alt="User">
+                                <div class="bubble">Hey! How are you?</div>
+                            </div>
+                            <div class="message sent">
+                                <div class="bubble">I'm doing great! Just finished working on a new project. 😊</div>
+                            </div>
+                            <div class="message received">
+                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" alt="User">
+                                <div class="bubble">That's awesome! What kind of project?</div>
+                            </div>
+                            <div class="message sent">
+                                <div class="bubble">An Instagram clone! It has all the features like feed, likes, comments, stories, etc.</div>
+                            </div>
+                            <div class="message received">
+                                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" alt="User">
+                                <div class="bubble">Wow, that sounds amazing! Can't wait to see it 🎉</div>
+                            </div>
+                        </div>
+                        <div class="chat-input">
+                            <i class="far fa-smile"></i>
+                            <input type="text" placeholder="Message..." id="message-input">
+                            <button id="send-message"><i class="far fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications View -->
+            <div id="notifications-view" class="view">
+                <h2>Notifications</h2>
+                <div class="notifications-list">
+                    <div class="notification-item unread">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" alt="User">
+                        <div class="notification-content">
+                            <p><strong>jennifer</strong> started following you</p>
+                            <span class="time">2 hours ago</span>
+                        </div>
+                        <button class="follow-btn">Follow</button>
+                    </div>
+                    <div class="notification-item unread">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100" alt="User">
+                        <div class="notification-content">
+                            <p><strong>mike_dev</strong> liked your photo</p>
+                            <span class="time">5 hours ago</span>
+                        </div>
+                        <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=100" alt="Post" class="notification-post">
+                    </div>
+                    <div class="notification-item unread">
+                        <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100" alt="User">
+                        <div class="notification-content">
+                            <p><strong>sarah.c</strong> commented on your post: "Amazing shot! 📸"</p>
+                            <span class="time">1 day ago</span>
+                        </div>
+                        <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=100" alt="Post" class="notification-post">
+                    </div>
+                    <div class="notification-item">
+                        <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100" alt="User">
+                        <div class="notification-content">
+                            <p><strong>emma_w</strong> mentioned you in a comment</p>
+                            <span class="time">2 days ago</span>
+                        </div>
+                    </div>
+                    <div class="notification-item">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100" alt="User">
+                        <div class="notification-content">
+                            <p><strong>david_r</strong> shared your post</p>
+                            <span class="time">3 days ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Post View -->
+            <div id="create-view" class="view">
+                <div class="create-container">
+                    <h2>Create new post</h2>
+                    <div class="create-dropzone" id="create-dropzone">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag photos here or click to select</p>
+                        <input type="file" id="file-input" accept="image/*" multiple>
+                    </div>
+                    <div class="create-preview" id="create-preview" style="display: none;">
+                        <img id="preview-image" src="" alt="Preview">
+                        <button class="remove-image" id="remove-image"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="create-url-input" style="margin: 15px 0;">
+                        <input type="text" id="image-url-input" placeholder="Or paste an image URL...">
+                        <button class="btn-secondary" id="load-url-btn">Load URL</button>
+                    </div>
+                    <div class="create-options">
+                        <textarea id="create-caption" placeholder="Write a caption..."></textarea>
+                        <div class="create-actions">
+                            <button class="btn-secondary" id="cancel-create">Cancel</button>
+                            <button class="btn-primary" id="share-post">Share</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile View -->
+            <div id="profile-view" class="view">
+                <div class="profile-header">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200" alt="Profile" class="profile-avatar" id="profile-avatar">
+                    <div class="profile-info">
+                        <div class="profile-top">
+                            <h2 id="profile-username">john_doe</h2>
+                            <button class="btn-secondary" id="edit-profile">Edit Profile</button>
+                            <button class="btn-icon"><i class="fas fa-cog"></i></button>
+                        </div>
+                        <div class="profile-stats">
+                            <span><strong id="post-count">12</strong> posts</span>
+                            <span><strong id="follower-count">1,234</strong> followers</span>
+                            <span><strong id="following-count">567</strong> following</span>
+                        </div>
+                        <div class="profile-bio">
+                            <strong id="profile-name">John Doe</strong>
+                            <p id="profile-bio-text">📸 Photography enthusiast<br>🌍 Travel lover<br>✌️ Living life one photo at a time</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-tabs">
+                    <a href="#" class="tab active"><i class="fas fa-th"></i> Posts</a>
+                    <a href="#" class="tab"><i class="fas fa-bookmark"></i> Saved</a>
+                    <a href="#" class="tab"><i class="fas fa-id-card"></i> Tagged</a>
+                </div>
+                <div class="profile-posts" id="profile-posts">
+                    <!-- Profile posts will be dynamically inserted here -->
+                </div>
+            </div>
+
+            <!-- Admin View -->
+            <div id="admin-view" class="view">
+                <div class="admin-container">
+                    <h2>Admin Dashboard</h2>
+                    <div class="admin-stats">
+                        <div class="stat-card">
+                            <h3 id="stat-total-users">0</h3>
+                            <p>Total Users</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="stat-total-posts">0</h3>
+                            <p>Total Posts</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="stat-total-likes">0</h3>
+                            <p>Total Likes</p>
+                        </div>
+                        <div class="stat-card">
+                            <h3 id="stat-total-comments">0</h3>
+                            <p>Total Comments</p>
+                        </div>
+                    </div>
+                    <div class="admin-section">
+                        <h3>Users by Grade</h3>
+                        <div id="grade-stats" class="grade-stats"></div>
+                    </div>
+                    <div class="admin-section">
+                        <h3>All Users</h3>
+                        <div class="admin-users-table" id="admin-users-table">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Age</th>
+                                        <th>Grade</th>
+                                        <th>School</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-users-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Suggestions Sidebar -->
+        <aside class="suggestions-sidebar">
+            <div class="current-user">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100" alt="Profile">
+                <div class="user-info">
+                    <span class="username">john_doe</span>
+                    <span class="name">John Doe</span>
+                </div>
+                <button class="switch-btn">Switch</button>
+            </div>
+            <div class="suggestions-header">
+                <span>Suggestions For You</span>
+                <button class="see-all">See All</button>
+            </div>
+            <div class="suggestions-list" id="suggestions-list">
+                <!-- Suggestions will be dynamically inserted here -->
+            </div>
+        </aside>
+    </div>
+
+    <!-- Post Modal -->
+    <div id="post-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-post" id="modal-post">
+                <!-- Post content will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <span id="toast-message"></span>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="modal">
+        <div class="modal-content edit-profile-content">
+            <div class="edit-profile-header">
+                <h3>Edit Profile</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <form id="edit-profile-form">
+                <div class="form-group">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100" alt="Profile" class="edit-avatar">
+                    <label for="avatar-upload" class="change-photo">Change Photo</label>
+                    <input type="file" id="avatar-upload" accept="image/*" hidden>
+                </div>
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="edit-name" value="John Doe">
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="edit-username" value="john_doe">
+                </div>
+                <div class="form-group">
+                    <label>Bio</label>
+                    <textarea id="edit-bio">📸 Photography enthusiast<br>🌍 Travel lover<br>✌️ Living life one photo at a time</textarea>
+                </div>
+                <button type="submit" class="btn-primary">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
