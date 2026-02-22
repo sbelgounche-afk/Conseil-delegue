@@ -304,6 +304,14 @@ const elements = {
     editProfile: document.getElementById('edit-profile'),
     editProfileModal: document.getElementById('edit-profile-modal'),
     editProfileForm: document.getElementById('edit-profile-form'),
+    avatarUpload: document.getElementById('avatar-upload'),
+    editAvatarPreview: document.getElementById('edit-avatar-preview'),
+    editName: document.getElementById('edit-name'),
+    editPhone: document.getElementById('edit-phone'),
+    editAge: document.getElementById('edit-age'),
+    editSchool: document.getElementById('edit-school'),
+    editGrade: document.getElementById('edit-grade'),
+    editBio: document.getElementById('edit-bio'),
 
     // Suggestions
     suggestionsList: document.getElementById('suggestions-list'),
@@ -968,23 +976,40 @@ async function shareNewPost() {
 function openEditProfile() {
     if (!appState.currentUser) return;
 
-    document.getElementById('edit-name').value = appState.currentUser.name || '';
-    document.getElementById('edit-username').value = appState.currentUser.username || '';
-    document.getElementById('edit-bio').value = appState.currentUser.bio || '';
+    elements.editName.value = appState.currentUser.name || '';
+    elements.editBio.value = appState.currentUser.bio || '';
+    elements.editPhone.value = appState.currentUser.phone || '';
+    elements.editAge.value = appState.currentUser.age || '';
+    elements.editSchool.value = appState.currentUser.school || '';
+    elements.editGrade.value = appState.currentUser.grade || '';
+    elements.editAvatarPreview.src = appState.currentUser.avatar || 'https://via.placeholder.com/100';
+
     elements.editProfileModal.classList.add('active');
+}
+
+function handleAvatarPreview(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            elements.editAvatarPreview.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
 }
 
 async function handleEditProfile(e) {
     e.preventDefault();
 
-    const name = document.getElementById('edit-name').value;
-    const bio = document.getElementById('edit-bio').value;
-    const avatarFile = document.getElementById('avatar-upload').files[0];
-
     const formData = new FormData();
-    formData.append('name', name);
-    formData.append('bio', bio);
+    formData.append('name', elements.editName.value);
+    formData.append('bio', elements.editBio.value);
+    formData.append('phone', elements.editPhone.value);
+    formData.append('age', elements.editAge.value);
+    formData.append('school', elements.editSchool.value);
+    formData.append('grade', elements.editGrade.value);
 
+    const avatarFile = elements.avatarUpload.files[0];
     if (avatarFile) {
         formData.append('avatar', avatarFile);
     }
@@ -1214,6 +1239,7 @@ async function init() {
     // Edit profile modal
     elements.editProfile.addEventListener('click', openEditProfile);
     elements.editProfileForm.addEventListener('submit', handleEditProfile);
+    elements.avatarUpload.addEventListener('change', handleAvatarPreview);
     document.querySelector('#edit-profile-modal .close-modal').addEventListener('click', () => {
         elements.editProfileModal.classList.remove('active');
     });

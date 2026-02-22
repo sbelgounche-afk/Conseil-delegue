@@ -5,15 +5,34 @@ import { authenticate, AuthRequest } from './posts';
 const router = express.Router();
 
 /**
+ * Ensures all users with is_admin: 1 are members of the specified group.
+ */
+async function ensureAdminsInGroup(groupId: number) {
+    const admins = await db.user.findMany({
+        where: { is_admin: 1 },
+        select: { id: true }
+    });
+
+    for (const admin of admins) {
+        await db.groupMember.upsert({
+            where: { user_id_group_id: { user_id: admin.id, group_id: groupId } },
+            update: {},
+            create: { user_id: admin.id, group_id: groupId }
+        });
+    }
+}
+
+/**
  * Ensures a user belongs to the 3 mandatory default groups:
  * 1. GLOBAL (everyone)
  * 2. SCHOOL (everyone from the same school)
  * 3. LEVEL (everyone from the same grade)
+ * Also ensures all admins are in these groups.
  */
 export async function ensureUserInDefaultGroups(userId: number) {
     const user = await db.user.findUnique({
         where: { id: userId },
-        select: { id: true, school: true, grade: true }
+        select: { id: true, school: true, grade: true, is_admin: true }
     });
 
     if (!user) return;
@@ -28,11 +47,16 @@ export async function ensureUserInDefaultGroups(userId: number) {
             type: "GLOBAL"
         }
     });
+
+    // Add current user
     await db.groupMember.upsert({
         where: { user_id_group_id: { user_id: userId, group_id: globalGroup.id } },
         update: {},
         create: { user_id: userId, group_id: globalGroup.id }
     });
+
+    // Always ensure admins are in Global
+    await ensureAdminsInGroup(globalGroup.id);
 
     // 2. SCHOOL GROUP
     if (user.school) {
@@ -51,6 +75,9 @@ export async function ensureUserInDefaultGroups(userId: number) {
             update: {},
             create: { user_id: userId, group_id: schoolGroup.id }
         });
+
+        // Ensure admins are in this school group
+        await ensureAdminsInGroup(schoolGroup.id);
     }
 
     // 3. LEVEL GROUP
@@ -70,6 +97,9 @@ export async function ensureUserInDefaultGroups(userId: number) {
             update: {},
             create: { user_id: userId, group_id: gradeGroup.id }
         });
+
+        // Ensure admins are in this level group
+        await ensureAdminsInGroup(gradeGroup.id);
     }
 }
 

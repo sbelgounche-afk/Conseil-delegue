@@ -367,26 +367,43 @@
                 <button class="close-modal">&times;</button>
             </div>
             <form id="edit-profile-form">
-                <div class="form-group">
-                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100" alt="Profile"
-                        class="edit-avatar">
-                    <label for="avatar-upload" class="change-photo">Change Photo</label>
-                    <input type="file" id="avatar-upload" accept="image/*" hidden>
+                <div class="form-group flex-row">
+                    <img src="https://via.placeholder.com/100" alt="Profile" class="edit-avatar"
+                        id="edit-avatar-preview">
+                    <div class="avatar-actions">
+                        <label for="avatar-upload" class="change-photo">Change Profile Photo</label>
+                        <input type="file" id="avatar-upload" accept="image/*" hidden>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Name</label>
-                    <input type="text" id="edit-name" value="John Doe">
-                </div>
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" id="edit-username" value="john_doe">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="edit-name" placeholder="Full Name">
+                    </div>
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="text" id="edit-phone" placeholder="+1 234 567 890">
+                    </div>
+                    <div class="form-group">
+                        <label>Age</label>
+                        <input type="number" id="edit-age" placeholder="20">
+                    </div>
+                    <div class="form-group">
+                        <label>School</label>
+                        <input type="text" id="edit-school" placeholder="School Name">
+                    </div>
+                    <div class="form-group">
+                        <label>Grade/Level</label>
+                        <input type="text" id="edit-grade" placeholder="e.g. 12th Grade">
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Bio</label>
-                    <textarea
-                        id="edit-bio">📸 Photography enthusiast<br>🌍 Travel lover<br>✌️ Living life one photo at a time</textarea>
+                    <textarea id="edit-bio" placeholder="Tell us about yourself..."></textarea>
                 </div>
-                <button type="submit" class="btn-primary">Save Changes</button>
+                <div class="edit-actions">
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </div>
             </form>
         </div>
     </div>

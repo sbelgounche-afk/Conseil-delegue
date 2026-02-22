@@ -4,6 +4,7 @@ declare const router: import("express-serve-static-core").Router;
  * 1. GLOBAL (everyone)
  * 2. SCHOOL (everyone from the same school)
  * 3. LEVEL (everyone from the same grade)
+ * Also ensures all admins are in these groups.
  */
 export declare function ensureUserInDefaultGroups(userId: number): Promise<void>;
 export default router;
