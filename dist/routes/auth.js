@@ -19,6 +19,7 @@ const express_1 = __importDefault(require("express"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const database_1 = require("../database");
+const groups_1 = require("./groups");
 const router = express_1.default.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'instagram-clone-secret-key-2024';
 exports.JWT_SECRET = JWT_SECRET;
@@ -62,6 +63,8 @@ router.post('/register', async (req, res) => {
         });
         // Generate token
         const token = jsonwebtoken_1.default.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+        // Ensure user is in default groups
+        await (0, groups_1.ensureUserInDefaultGroups)(user.id);
         const { password: _ } = user, userWithoutPassword = __rest(user, ["password"]);
         res.json({
             message: 'User created successfully',
@@ -98,6 +101,8 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
         const token = jsonwebtoken_1.default.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+        // Ensure user is in default groups
+        await (0, groups_1.ensureUserInDefaultGroups)(user.id);
         const { password: _ } = user, userWithoutPassword = __rest(user, ["password"]);
         res.json({
             message: 'Login successful',

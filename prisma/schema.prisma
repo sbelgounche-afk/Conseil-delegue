@@ -34,6 +34,46 @@ model User {
   stories    Story[]     // A user can have many stories
   followedBy Follow[]  @relation("following")
   following  Follow[]  @relation("follower")
+  groups     GroupMember[] // Groups the user is a member of
+  messages   GroupMessage[] // Messages sent by the user
+}
+
+// Represents a messaging group (Global, School, or Level)
+model Group {
+  id          Int            @id @default(autoincrement())
+  name        String         @unique
+  type        String         // "GLOBAL", "SCHOOL", "LEVEL"
+  school      String?        // For type "SCHOOL"
+  grade       String?        // For type "LEVEL"
+  created_at  DateTime       @default(now())
+
+  members     GroupMember[]
+  messages    GroupMessage[]
+}
+
+// Junction table for User-Group membership
+model GroupMember {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  group_id   Int
+  joined_at  DateTime @default(now())
+
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  group      Group    @relation(fields: [group_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, group_id])
+}
+
+// Represents a message in a group
+model GroupMessage {
+  id         Int      @id @default(autoincrement())
+  group_id   Int
+  user_id    Int
+  text       String
+  created_at DateTime @default(now())
+
+  group      Group    @relation(fields: [group_id], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 // Represents a temporary story (expires in 24h)

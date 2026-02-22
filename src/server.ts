@@ -8,6 +8,7 @@ import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import postRoutes from './routes/posts';
 import storiesRoutes from './routes/stories';
+import groupsRoutes from './routes/groups';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -45,6 +46,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/stories', storiesRoutes);
+app.use('/api/groups', groupsRoutes);
 
 // Serve index.html for root
 app.get('/', (req: Request, res: Response) => {

@@ -221,8 +221,42 @@ const api = {
             headers: appState.getAuthHeader()
         });
         return res.json();
+    },
+
+    // Groups
+    async getGroups() {
+        const res = await fetch(`${API_URL}/groups`, {
+            headers: appState.getAuthHeader()
+        });
+        return res.json();
+    },
+
+    async getGroupMessages(groupId) {
+        const res = await fetch(`${API_URL}/groups/${groupId}/messages`, {
+            headers: appState.getAuthHeader()
+        });
+        return res.json();
+    },
+
+    async sendGroupMessage(groupId, text) {
+        const res = await fetch(`${API_URL}/groups/${groupId}/messages`, {
+            method: 'POST',
+            headers: {
+                ...appState.getAuthHeader(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ text })
+        });
+        return res.json();
     }
 };
+
+// ============================================
+// STATE ENHANCEMENT
+// ============================================
+
+appState.groups = [];
+appState.activeGroupId = null;
 
 // ============================================
 // DOM ELEMENTS
@@ -300,7 +334,11 @@ const elements = {
     // Stories
     storiesList: document.getElementById('stories-list'),
     addStoryBtn: document.getElementById('add-story-btn'),
-    storyUserAvatar: document.getElementById('story-user-avatar')
+    storyUserAvatar: document.getElementById('story-user-avatar'),
+
+    // Groups (Messaging)
+    conversationsList: document.getElementById('conversations-list'),
+    chatHeader: document.getElementById('chat-header')
 };
 
 // ============================================
@@ -683,6 +721,7 @@ async function renderAll() {
     renderExplore();
     await renderProfile();
     await renderSuggestions();
+    await renderGroups();
 
     // Update current user avatar in nav
     elements.currentUserAvatar.src = appState.currentUser?.avatar || 'https://via.placeholder.com/24';
@@ -962,16 +1001,110 @@ async function handleEditProfile(e) {
     }
 }
 
-// Messages (still mock)
-function sendMessage() {
-    const text = elements.messageInput.value.trim();
-    if (text) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'message sent';
-        messageDiv.innerHTML = `<div class="bubble">${text}</div>`;
-        elements.chatMessages.appendChild(messageDiv);
-        elements.messageInput.value = '';
+// Messages (Real Groups)
+async function sendMessage() {
+    if (!appState.activeGroupId) return;
 
+    const text = elements.messageInput.value.trim();
+    if (!text) return;
+
+    const result = await api.sendGroupMessage(appState.activeGroupId, text);
+    if (result.error) {
+        showToast(result.error);
+        return;
+    }
+
+    elements.messageInput.value = '';
+    await renderGroupMessages(appState.activeGroupId, false); // Refresh messages
+}
+
+let messagePollingInterval = null;
+
+async function selectGroup(groupId) {
+    appState.activeGroupId = groupId;
+    const group = appState.groups.find(g => g.id == groupId);
+
+    if (!group) return;
+
+    // Update Header
+    elements.chatHeader.querySelector('span').textContent = group.name;
+    const headerImg = elements.chatHeader.querySelector('img');
+    headerImg.style.display = 'block';
+    headerImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(group.name)}&background=random`;
+
+    // Highlight active group in list
+    document.querySelectorAll('.conversation-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.groupId == groupId);
+    });
+
+    // Permission Check for Input
+    if (group.type === "GLOBAL" && !appState.currentUser.is_admin) {
+        elements.messageInput.placeholder = "Only admins can talk here";
+        elements.messageInput.disabled = true;
+        elements.sendMessage.disabled = true;
+    } else {
+        elements.messageInput.placeholder = "Message...";
+        elements.messageInput.disabled = false;
+        elements.sendMessage.disabled = false;
+    }
+
+    // Load messages
+    await renderGroupMessages(groupId, true);
+
+    // Setup Polling
+    if (messagePollingInterval) clearInterval(messagePollingInterval);
+    messagePollingInterval = setInterval(() => {
+        if (appState.activeGroupId == groupId && document.getElementById('messages-view').classList.contains('active')) {
+            renderGroupMessages(groupId, false);
+        }
+    }, 5000);
+}
+
+async function renderGroups() {
+    if (!appState.isLoggedIn) return;
+
+    const groups = await api.getGroups();
+    appState.groups = groups;
+
+    if (!groups || groups.length === 0) {
+        elements.conversationsList.innerHTML = '<p style="padding: 20px; color: var(--text-secondary); text-align: center;">Initializing groups...</p>';
+        return;
+    }
+
+    elements.conversationsList.innerHTML = groups.map(g => `
+        <div class="conversation-item ${appState.activeGroupId == g.id ? 'active' : ''}" data-group-id="${g.id}">
+            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(g.name)}&background=random" alt="${g.name}">
+            <div class="conversation-info">
+                <span class="username">${g.name}</span>
+                <span class="last-message">${g.memberCount} members</span>
+            </div>
+        </div>
+    `).join('');
+
+    // Add click handlers
+    document.querySelectorAll('.conversation-item').forEach(item => {
+        item.addEventListener('click', () => selectGroup(item.dataset.groupId));
+    });
+}
+
+async function renderGroupMessages(groupId, shouldScroll = true) {
+    const messages = await api.getGroupMessages(groupId);
+
+    if (!messages) return;
+
+    const messagesHtml = messages.map(msg => {
+        const isMine = msg.user_id === appState.currentUser.id;
+        return `
+            <div class="message ${isMine ? 'sent' : 'received'}">
+                ${!isMine ? `<span class="message-user">${msg.user.username}${msg.user.is_admin ? ' (Admin)' : ''}</span>` : ''}
+                <div class="bubble">${msg.text}</div>
+            </div>
+        `;
+    }).join('');
+
+    elements.chatMessages.innerHTML = messagesHtml;
+
+    if (shouldScroll) {
         elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
     }
 }

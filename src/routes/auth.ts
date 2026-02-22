@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../database';
+import { ensureUserInDefaultGroups } from './groups';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'instagram-clone-secret-key-2024';
@@ -58,6 +59,9 @@ router.post('/register', async (req: Request, res: Response) => {
         // Generate token
         const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
 
+        // Ensure user is in default groups
+        await ensureUserInDefaultGroups(user.id);
+
         const { password: _, ...userWithoutPassword } = user;
 
         res.json({
@@ -101,6 +105,9 @@ router.post('/login', async (req: Request, res: Response) => {
         }
 
         const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+
+        // Ensure user is in default groups
+        await ensureUserInDefaultGroups(user.id);
 
         const { password: _, ...userWithoutPassword } = user;
 
