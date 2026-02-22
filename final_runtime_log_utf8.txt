@@ -1,0 +1,44 @@
+﻿node : node:internal/modules/cjs/loader:657
+Au caractère Ligne:1 : 1
++ node dist/server.js > 
+final_runtime_log.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo          : NotSpecified: 
+    (node:internal/modules/cjs/loader:657:  
+  String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommand 
+   Error
+ 
+      throw e;
+      ^
+
+Error: Cannot find module 
+'C:\Users\pc\Desktop\instagram de kilo\node_
+modules\@prisma\client\runtime\client.js'
+    at createEsmNotFoundErr 
+(node:internal/modules/cjs/loader:1419:15)
+    at finalizeEsmResolution 
+(node:internal/modules/cjs/loader:1408:15)
+    at resolveExports 
+(node:internal/modules/cjs/loader:650:14)
+    at Function._findPath 
+(node:internal/modules/cjs/loader:717:31)
+    at Function._resolveFilename 
+(node:internal/modules/cjs/loader:1369:27)
+    at defaultResolveImpl 
+(node:internal/modules/cjs/loader:1025:19)
+    at resolveForCJSWithHooks 
+(node:internal/modules/cjs/loader:1030:22)
+    at Function._load 
+(node:internal/modules/cjs/loader:1192:37)
+    at TracingChannel.traceSync 
+(node:diagnostics_channel:328:14)
+    at wrapModuleLoad 
+(node:internal/modules/cjs/loader:237:24) {
+  code: 'MODULE_NOT_FOUND',
+  path: 'C:\\Users\\pc\\Desktop\\instagram 
+de kilo\\node_modules\\@prisma\\client'
+}
+
+Node.js v22.22.0

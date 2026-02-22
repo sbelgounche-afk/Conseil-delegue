@@ -1,0 +1,55 @@
+﻿
+> instagram-clone-backend@1.0.0 build
+> tsc
+
+src/database.ts(4,16): error TS2554: Expected 1 arguments, but got 0.
+src/routes/posts.ts(97,21): error TS2375: Type '{ user_id: number | undefined; }' is not assignable to type 'LikeWhereInput' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'user_id' are incompatible.
+    Type 'number | undefined' is not assignable to type 'number | IntFilter<"Like">'.
+      Type 'undefined' is not assignable to type 'number | IntFilter<"Like">'.
+src/routes/posts.ts(147,21): error TS2375: Type '{ user_id: number | undefined; }' is not assignable to type 'LikeWhereInput' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'user_id' are incompatible.
+    Type 'number | undefined' is not assignable to type 'number | IntFilter<"Like">'.
+      Type 'undefined' is not assignable to type 'number | IntFilter<"Like">'.
+src/routes/posts.ts(221,33): error TS2345: Argument of type 'string | string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/routes/posts.ts(258,33): error TS2345: Argument of type 'string | string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/routes/posts.ts(287,33): error TS2345: Argument of type 'string | string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/routes/posts.ts(309,33): error TS2345: Argument of type 'string | string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/routes/posts.ts(339,29): error TS2345: Argument of type 'string | string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/routes/users.ts(72,13): error TS2375: Type '{ id: number | undefined; }' is not assignable to type 'UserWhereUniqueInput' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Type '{ id: number | undefined; }' is not assignable to type '{ id: number; username: string; email: string; } & { id?: number; username?: string; email?: string; AND?: UserWhereInput | UserWhereInput[]; OR?: UserWhereInput[]; ... 15 more ...; following?: FollowListRelationFilter; }'.
+    Type '{ id: number | undefined; }' is missing the following properties from type '{ id: number; username: string; email: string; }': username, email
+src/routes/users.ts(92,25): error TS2339: Property '_count' does not exist on type '{ id: number; username: string; email: string; password: string; name: string | null; phone: string | null; age: number | null; grade: string | null; school: string | null; bio: string | null; avatar: string | null; is_admin: number; created_at: Date; }'.
+src/routes/users.ts(93,29): error TS2339: Property '_count' does not exist on type '{ id: number; username: string; email: string; password: string; name: string | null; phone: string | null; age: number | null; grade: string | null; school: string | null; bio: string | null; avatar: string | null; is_admin: number; created_at: Date; }'.
+src/routes/users.ts(94,29): error TS2339: Property '_count' does not exist on type '{ id: number; username: string; email: string; password: string; name: string | null; phone: string | null; age: number | null; grade: string | null; school: string | null; bio: string | null; avatar: string | null; is_admin: number; created_at: Date; }'.
+src/routes/users.ts(106,22): error TS2412: Type 'string | string[] | undefined' is not assignable to type 'string | undefined' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the type of the target.
+src/routes/users.ts(131,44): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/routes/users.ts(148,25): error TS2339: Property '_count' does not exist on type '{ id: number; username: string; email: string; password: string; name: string | null; phone: string | null; age: number | null; grade: string | null; school: string | null; bio: string | null; avatar: string | null; is_admin: number; created_at: Date; }'.
+src/routes/users.ts(149,29): error TS2339: Property '_count' does not exist on type '{ id: number; username: string; email: string; password: string; name: string | null; phone: string | null; age: number | null; grade: string | null; school: string | null; bio: string | null; avatar: string | null; is_admin: number; created_at: Date; }'.
+src/routes/users.ts(150,29): error TS2339: Property '_count' does not exist on type '{ id: number; username: string; email: string; password: string; name: string | null; phone: string | null; age: number | null; grade: string | null; school: string | null; bio: string | null; avatar: string | null; is_admin: number; created_at: Date; }'.
+src/routes/users.ts(179,13): error TS2375: Type '{ id: number | undefined; }' is not assignable to type 'UserWhereUniqueInput' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Type '{ id: number | undefined; }' is not assignable to type '{ id: number; username: string; email: string; } & { id?: number; username?: string; email?: string; AND?: UserWhereInput | UserWhereInput[]; OR?: UserWhereInput[]; ... 15 more ...; following?: FollowListRelationFilter; }'.
+    Type '{ id: number | undefined; }' is missing the following properties from type '{ id: number; username: string; email: string; }': username, email
+src/routes/users.ts(193,35): error TS2345: Argument of type 'string | string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/routes/users.ts(228,35): error TS2345: Argument of type 'string | string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/routes/users.ts(249,17): error TS2322: Type '{ not: number | undefined; }' is not assignable to type 'number | IntFilter<"User"> | undefined'.
+  Type '{ not: number | undefined; }' is not assignable to type 'IntFilter<"User">' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+    Types of property 'not' are incompatible.
+      Type 'number | undefined' is not assignable to type 'number | NestedIntFilter<"User">'.
+        Type 'undefined' is not assignable to type 'number | NestedIntFilter<"User">'.
+src/routes/users.ts(251,21): error TS2375: Type '{ follower_id: number | undefined; }' is not assignable to type 'FollowWhereInput' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+  Types of property 'follower_id' are incompatible.
+    Type 'number | undefined' is not assignable to type 'number | IntFilter<"Follow">'.
+      Type 'undefined' is not assignable to type 'number | IntFilter<"Follow">'.
+src/routes/users.ts(373,35): error TS2345: Argument of type 'string | string[] | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.

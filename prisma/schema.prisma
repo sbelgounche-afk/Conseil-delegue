@@ -1,0 +1,96 @@
+// This is the blueprint for your entire database.
+// It defines what data we store and how things are connected (relations).
+
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "binary" // Optimized for Windows stability
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Represents a person using the app
+model User {
+  id         Int       @id @default(autoincrement())
+  username   String    @unique
+  email      String    @unique
+  password   String
+  name       String?
+  phone      String?
+  age        Int?
+  grade      String?
+  school     String?
+  bio        String?   @default("")
+  avatar     String?   @default("")
+  is_admin   Int       @default(0) // 1 for Admin, 0 for regular user
+  created_at DateTime  @default(now())
+
+  // Connections (Relationships)
+  posts      Post[]      // A user can have many posts
+  comments   Comment[]   // A user can write many comments
+  likes      Like[]      // A user can like many posts
+  followedBy Follow[]  @relation("following")
+  following  Follow[]  @relation("follower")
+}
+
+// Represents a post (photo + caption)
+model Post {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  image      String
+  caption    String?   @default("")
+  likes_count Int      @default(0) @map("likes")
+  created_at DateTime  @default(now())
+
+  // Relationships
+  user       User      @relation(fields: [user_id], references: [id])
+  comments   Comment[]
+  postLikes  Like[]
+
+  @@map("posts")
+}
+
+// Tracks which users liked which posts
+model Like {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  post_id    Int
+  created_at DateTime  @default(now())
+
+  user       User      @relation(fields: [user_id], references: [id])
+  post       Post      @relation(fields: [post_id], references: [id])
+
+  @@unique([user_id, post_id]) // A user can only like a post once
+  @@map("likes")
+}
+
+// Represents a comment on a post
+model Comment {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  post_id    Int
+  text       String
+  created_at DateTime  @default(now())
+
+  user       User      @relation(fields: [user_id], references: [id])
+  post       Post      @relation(fields: [post_id], references: [id])
+
+  @@map("comments")
+}
+
+// Tracks who follows whom
+model Follow {
+  id           Int      @id @default(autoincrement())
+  follower_id  Int
+  following_id Int
+  created_at   DateTime @default(now())
+
+  follower     User     @relation("follower", fields: [follower_id], references: [id])
+  following    User     @relation("following", fields: [following_id], references: [id])
+
+  @@unique([follower_id, following_id])
+  @@map("follows")
+}
+

@@ -1,0 +1,23 @@
+﻿
+> instagram-clone-backend@1.0.0 build
+> tsc
+
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/database.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/generated/prisma/browser.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/generated/prisma/client.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/generated/prisma/commonInputTypes.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/generated/prisma/enums.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/generated/prisma/internal/class.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/generated/prisma/internal/prismaNamespace.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/generated/prisma/internal/prismaNamespaceBrowser.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/generated/prisma/models.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/generated/prisma/models/Comment.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/generated/prisma/models/Follow.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/generated/prisma/models/Like.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/generated/prisma/models/Post.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/generated/prisma/models/User.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/routes/auth.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/routes/posts.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/routes/users.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/server.d.ts' because it would overwrite input file.
+error TS5055: Cannot write file 'C:/Users/pc/Desktop/instagram de kilo/dist/types/models.d.ts' because it would overwrite input file.

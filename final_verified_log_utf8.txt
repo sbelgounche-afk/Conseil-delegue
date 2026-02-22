@@ -1,0 +1,81 @@
+﻿node : Error initializing database with 
+Prisma: PrismaClientKnownRequestError: 
+Au caractère Ligne:1 : 62
++ ... ate; npm run build; node 
+dist/server.js > final_verified_log.txt 2>&1
++                         ~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: 
+    (Error initializ...nRequestError: :Str  
+  ing) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommand 
+   Error
+ 
+Invalid `prisma.user.findUnique()` 
+invocation in
+C:\Users\pc\Desktop\instagram de 
+kilo\dist\database.js:16:41
+
+  13 try {
+  14     // Create admin account if not 
+exists
+  15     const adminPassword = 'admin123';
+ÔåÆ 16     const admin = await 
+prisma.user.findUnique(
+The table `main.User` does not exist in the 
+current database.
+    at In.handleRequestError 
+(C:\Users\pc\Desktop\instagram de kilo\node_
+modules\@prisma\client\runtime\library.js:12
+2:6854)
+    at In.handleAndLogRequestError 
+(C:\Users\pc\Desktop\instagram de kilo\node_
+modules\@prisma\client\runtime\library.js:12
+2:6188)
+    at In.request 
+(C:\Users\pc\Desktop\instagram de kilo\node_
+modules\@prisma\client\runtime\library.js:12
+2:5896)
+    at async l 
+(C:\Users\pc\Desktop\instagram de kilo\node_
+modules\@prisma\client\runtime\library.js:12
+7:10871)
+    at async initDatabase 
+(C:\Users\pc\Desktop\instagram de 
+kilo\dist\database.js:16:23)
+    at async startServer 
+(C:\Users\pc\Desktop\instagram de 
+kilo\dist\server.js:33:5) {
+  code: 'P2021',
+  clientVersion: '5.11.0',
+  meta: { modelName: 'User', table: 
+'main.User' }
+}
+node:events:497
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already 
+in use :::3000
+    at Server.setupListenHandle [as 
+_listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Function.listen 
+(C:\Users\pc\Desktop\instagram de kilo\node_
+modules\express\lib\application.js:635:24)
+    at startServer 
+(C:\Users\pc\Desktop\instagram de 
+kilo\dist\server.js:34:9)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections 
+(node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3000
+}
+
+Node.js v22.22.0

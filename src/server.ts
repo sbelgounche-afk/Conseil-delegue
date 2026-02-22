@@ -30,8 +30,14 @@ if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Initialize database
-initDatabase();
+// Initialize database and start server
+async function startServer() {
+    await initDatabase();
+
+    app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+    });
+}
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -43,6 +49,5 @@ app.get('/', (req: Request, res: Response) => {
     res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+startServer();
+

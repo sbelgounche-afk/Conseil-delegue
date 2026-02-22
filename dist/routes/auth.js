@@ -1,4 +1,15 @@
 "use strict";
+var __rest = (this && this.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
+            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
+                t[p[i]] = s[p[i]];
+        }
+    return t;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -11,113 +22,130 @@ const database_1 = require("../database");
 const router = express_1.default.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'instagram-clone-secret-key-2024';
 exports.JWT_SECRET = JWT_SECRET;
-// Register
-router.post('/register', (req, res) => {
+// --- User Registration ---
+// This route creates a new user account.
+router.post('/register', async (req, res) => {
     const { username, email, password, name, phone, age, grade, school } = req.body;
     if (!username || !email || !password) {
         return res.status(400).json({ error: 'Username, email and password are required' });
     }
-    // Check if user already exists
-    database_1.db.get('SELECT id FROM users WHERE username = ? OR email = ?', [username, email], (err, existingUser) => {
-        if (err) {
-            return res.status(500).json({ error: 'Database error' });
-        }
+    try {
+        // Check if user already exists
+        const existingUser = await database_1.db.user.findFirst({
+            where: {
+                OR: [
+                    { username },
+                    { email }
+                ]
+            }
+        });
         if (existingUser) {
             return res.status(400).json({ error: 'Username or email already exists' });
         }
         // Hash password
-        bcryptjs_1.default.hash(password, 10, (err, hashedPassword) => {
-            if (err) {
-                return res.status(500).json({ error: 'Error hashing password' });
+        const hashedPassword = await bcryptjs_1.default.hash(password, 10);
+        // Create user
+        const user = await database_1.db.user.create({
+            data: {
+                username,
+                email,
+                password: hashedPassword,
+                name: name || username,
+                phone: phone || '',
+                age: age ? parseInt(age.toString()) : null,
+                grade: grade || '',
+                school: school || '',
+                avatar: '',
+                bio: '',
+                is_admin: 0
             }
-            // Insert user with new fields
-            database_1.db.run('INSERT INTO users (username, email, password, name, phone, age, grade, school) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [username, email, hashedPassword, name || username, phone || '', age || null, grade || '', school || ''], function (err) {
-                if (err) {
-                    return res.status(500).json({ error: 'Error creating user' });
-                }
-                // Generate token
-                const token = jsonwebtoken_1.default.sign({ id: this.lastID, username }, JWT_SECRET, { expiresIn: '7d' });
-                res.json({
-                    message: 'User created successfully',
-                    token,
-                    user: {
-                        id: this.lastID,
-                        username,
-                        email,
-                        name: name || username,
-                        phone: phone || '',
-                        age: age || null,
-                        grade: grade || '',
-                        school: school || '',
-                        avatar: '',
-                        bio: '',
-                        is_admin: 0
-                    }
-                });
-            });
         });
-    });
+        // Generate token
+        const token = jsonwebtoken_1.default.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+        const { password: _ } = user, userWithoutPassword = __rest(user, ["password"]);
+        res.json({
+            message: 'User created successfully',
+            token,
+            user: userWithoutPassword
+        });
+    }
+    catch (err) {
+        console.error('Registration error:', err);
+        res.status(500).json({ error: 'Error creating user' });
+    }
 });
-// Login
-router.post('/login', (req, res) => {
+// --- User Login ---
+// This route checks credentials and gives the user a "token" (JWT) so they can stay logged in.
+router.post('/login', async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
         return res.status(400).json({ error: 'Username and password are required' });
     }
-    database_1.db.get('SELECT * FROM users WHERE username = ? OR email = ?', [username, username], (err, user) => {
-        if (err) {
-            return res.status(500).json({ error: 'Database error' });
-        }
+    try {
+        const user = await database_1.db.user.findFirst({
+            where: {
+                OR: [
+                    { username },
+                    { email: username }
+                ]
+            }
+        });
         if (!user) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
-        bcryptjs_1.default.compare(password, user.password, (err, isMatch) => {
-            if (err) {
-                return res.status(500).json({ error: 'Error checking password' });
-            }
-            if (!isMatch) {
-                return res.status(401).json({ error: 'Invalid credentials' });
-            }
-            const token = jsonwebtoken_1.default.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
-            res.json({
-                message: 'Login successful',
-                token,
-                user: {
-                    id: user.id,
-                    username: user.username,
-                    email: user.email,
-                    name: user.name,
-                    phone: user.phone || '',
-                    age: user.age || null,
-                    grade: user.grade || '',
-                    school: user.school || '',
-                    avatar: user.avatar,
-                    bio: user.bio || '',
-                    is_admin: user.is_admin || 0
-                }
-            });
+        const isMatch = await bcryptjs_1.default.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
+        const token = jsonwebtoken_1.default.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+        const { password: _ } = user, userWithoutPassword = __rest(user, ["password"]);
+        res.json({
+            message: 'Login successful',
+            token,
+            user: userWithoutPassword
         });
-    });
+    }
+    catch (err) {
+        console.error('Login error:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
-// Verify token
-router.get('/verify', (req, res) => {
+// --- Token Verification ---
+// This route checks if a user's token is still valid.
+// Useful for keeping users logged in when they refresh the page.
+router.get('/verify', async (req, res) => {
     var _a;
     const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(' ')[1];
     if (!token) {
         return res.status(401).json({ error: 'No token provided' });
     }
-    jsonwebtoken_1.default.verify(token, JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ error: 'Invalid token' });
-        }
-        const payload = decoded;
-        database_1.db.get('SELECT id, username, email, name, phone, age, grade, school, avatar, bio, is_admin FROM users WHERE id = ?', [payload.id], (err, user) => {
-            if (err || !user) {
-                return res.status(401).json({ error: 'User not found' });
+    try {
+        const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
+        const user = await database_1.db.user.findUnique({
+            where: { id: decoded.id },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                name: true,
+                phone: true,
+                age: true,
+                grade: true,
+                school: true,
+                avatar: true,
+                bio: true,
+                is_admin: true,
+                created_at: true
             }
-            res.json({ user });
         });
-    });
+        if (!user) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+        res.json({ user });
+    }
+    catch (err) {
+        res.status(401).json({ error: 'Invalid token' });
+    }
 });
 exports.default = router;
 //# sourceMappingURL=auth.js.map

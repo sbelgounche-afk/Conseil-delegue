@@ -58,63 +58,93 @@ const authenticate = (req, res, next) => {
     });
 };
 exports.authenticate = authenticate;
-// Get all posts (feed)
-router.get('/feed', authenticate, (req, res) => {
-    database_1.db.all(`
-        SELECT p.*, u.username, u.name, u.avatar,
-        (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as like_count,
-        (SELECT COUNT(*) FROM comments WHERE post_id = p.id) as comment_count,
-        (SELECT id FROM likes WHERE user_id = ? AND post_id = p.id) as liked
-        FROM posts p
-        JOIN users u ON p.user_id = u.id
-        ORDER BY p.created_at DESC
-        LIMIT 50
-    `, [req.userId], (err, posts) => {
-        if (err) {
-            console.error('Error getting feed:', err);
-            return res.status(500).json({ error: 'Error getting feed' });
-        }
-        // Get comments for each post
-        const getComments = (post) => {
-            return new Promise((resolve) => {
-                database_1.db.all(`
-                    SELECT c.*, u.username, u.avatar
-                    FROM comments c
-                    JOIN users u ON c.user_id = u.id
-                    WHERE c.post_id = ?
-                    ORDER BY c.created_at DESC
-                    LIMIT 3
-                `, [post.id], (err, comments) => {
-                    resolve(comments || []);
-                });
-            });
-        };
-        Promise.all(posts.map(post => getComments(post).then(comments => (Object.assign(Object.assign({}, post), { comments })))))
-            .then(postsWithComments => {
-            res.json(postsWithComments);
+// --- Main Feed ---
+// This route gets the most recent posts to show on the home screen.
+// It also fetches info about who wrote the post, comments, and likes.
+router.get('/feed', authenticate, async (req, res) => {
+    try {
+        const posts = await database_1.db.post.findMany({
+            take: 50,
+            orderBy: { created_at: 'desc' },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        name: true,
+                        avatar: true
+                    }
+                },
+                comments: {
+                    take: 3,
+                    orderBy: { created_at: 'desc' },
+                    include: {
+                        user: {
+                            select: {
+                                username: true,
+                                avatar: true
+                            }
+                        }
+                    }
+                },
+                _count: {
+                    select: {
+                        postLikes: true,
+                        comments: true
+                    }
+                },
+                postLikes: {
+                    where: { user_id: req.userId },
+                    select: { id: true }
+                }
+            }
         });
-    });
+        const formattedPosts = posts.map((post) => (Object.assign(Object.assign({}, post), { username: post.user.username, name: post.user.name, avatar: post.user.avatar, like_count: post._count.postLikes, comment_count: post._count.comments, liked: post.postLikes.length > 0 ? post.postLikes[0].id : 0, comments: post.comments.map((c) => (Object.assign(Object.assign({}, c), { username: c.user.username, avatar: c.user.avatar }))) })));
+        res.json(formattedPosts);
+    }
+    catch (err) {
+        console.error('Error getting feed:', err);
+        res.status(500).json({ error: 'Error getting feed' });
+    }
 });
 // Get user's posts
-router.get('/user/:userId', authenticate, (req, res) => {
-    database_1.db.all(`
-        SELECT p.*, u.username, u.name, u.avatar,
-        (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as like_count,
-        (SELECT COUNT(*) FROM comments WHERE post_id = p.id) as comment_count,
-        (SELECT id FROM likes WHERE user_id = ? AND post_id = p.id) as liked
-        FROM posts p
-        JOIN users u ON p.user_id = u.id
-        WHERE p.user_id = ?
-        ORDER BY p.created_at DESC
-    `, [req.userId, req.params.userId], (err, posts) => {
-        if (err) {
-            return res.status(500).json({ error: 'Error getting posts' });
-        }
-        res.json(posts);
-    });
+router.get('/user/:userId', authenticate, async (req, res) => {
+    try {
+        const userId = parseInt(req.params.userId);
+        const posts = await database_1.db.post.findMany({
+            where: { user_id: userId },
+            orderBy: { created_at: 'desc' },
+            include: {
+                user: {
+                    select: {
+                        username: true,
+                        name: true,
+                        avatar: true
+                    }
+                },
+                _count: {
+                    select: {
+                        postLikes: true,
+                        comments: true
+                    }
+                },
+                postLikes: {
+                    where: { user_id: req.userId },
+                    select: { id: true }
+                }
+            }
+        });
+        const formattedPosts = posts.map((post) => (Object.assign(Object.assign({}, post), { username: post.user.username, name: post.user.name, avatar: post.user.avatar, like_count: post._count.postLikes, comment_count: post._count.comments, liked: post.postLikes.length > 0 ? post.postLikes[0].id : 0 })));
+        res.json(formattedPosts);
+    }
+    catch (err) {
+        console.error('Error getting user posts:', err);
+        res.status(500).json({ error: 'Error getting posts' });
+    }
 });
-// Create a post
-router.post('/', authenticate, upload.single('image'), (req, res) => {
+// --- Create a New Post ---
+// Users can upload an image and add a caption.
+router.post('/', authenticate, upload.single('image'), async (req, res) => {
     const { caption, image } = req.body;
     let imagePath = '';
     if (req.file) {
@@ -126,28 +156,38 @@ router.post('/', authenticate, upload.single('image'), (req, res) => {
     else {
         return res.status(400).json({ error: 'Image is required' });
     }
-    database_1.db.run('INSERT INTO posts (user_id, image, caption) VALUES (?, ?, ?)', [req.userId, imagePath, caption || ''], function (err) {
-        if (err) {
-            console.error('Error creating post:', err);
-            return res.status(500).json({ error: 'Error creating post' });
-        }
-        database_1.db.get(`
-                SELECT p.*, u.username, u.name, u.avatar,
-                (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as like_count,
-                (SELECT COUNT(*) FROM comments WHERE post_id = p.id) as comment_count,
-                0 as liked
-                FROM posts p
-                JOIN users u ON p.user_id = u.id
-                WHERE p.id = ?
-            `, [this.lastID], (err, post) => {
-            res.json(Object.assign(Object.assign({}, post), { comments: [] }));
+    try {
+        const post = await database_1.db.post.create({
+            data: {
+                user_id: req.userId,
+                image: imagePath,
+                caption: caption || ''
+            },
+            include: {
+                user: {
+                    select: {
+                        username: true,
+                        name: true,
+                        avatar: true
+                    }
+                }
+            }
         });
-    });
+        res.json(Object.assign(Object.assign({}, post), { username: post.user.username, name: post.user.name, avatar: post.user.avatar, like_count: 0, comment_count: 0, liked: 0, comments: [] }));
+    }
+    catch (err) {
+        console.error('Error creating post:', err);
+        res.status(500).json({ error: 'Error creating post' });
+    }
 });
 // Delete a post
-router.delete('/:postId', authenticate, (req, res) => {
-    database_1.db.get('SELECT * FROM posts WHERE id = ?', [req.params.postId], (err, post) => {
-        if (err || !post) {
+router.delete('/:postId', authenticate, async (req, res) => {
+    try {
+        const postId = parseInt(String(req.params.postId));
+        const post = await database_1.db.post.findUnique({
+            where: { id: postId }
+        });
+        if (!post) {
             return res.status(404).json({ error: 'Post not found' });
         }
         if (post.user_id !== req.userId) {
@@ -160,97 +200,141 @@ router.delete('/:postId', authenticate, (req, res) => {
                 fs_1.default.unlinkSync(imagePath);
             }
         }
-        database_1.db.run('DELETE FROM likes WHERE post_id = ?', [req.params.postId], (err) => {
-            database_1.db.run('DELETE FROM comments WHERE post_id = ?', [req.params.postId], (err) => {
-                database_1.db.run('DELETE FROM posts WHERE id = ?', [req.params.postId], (err) => {
-                    res.json({ message: 'Post deleted successfully' });
-                });
-            });
-        });
-    });
+        await database_1.db.$transaction([
+            database_1.db.like.deleteMany({ where: { post_id: postId } }),
+            database_1.db.comment.deleteMany({ where: { post_id: postId } }),
+            database_1.db.post.delete({ where: { id: postId } })
+        ]);
+        res.json({ message: 'Post deleted successfully' });
+    }
+    catch (err) {
+        console.error('Error deleting post:', err);
+        res.status(500).json({ error: 'Error deleting post' });
+    }
 });
-// Like a post
-router.post('/:postId/like', authenticate, (req, res) => {
-    database_1.db.get('SELECT id FROM posts WHERE id = ?', [req.params.postId], (err, post) => {
-        if (err || !post) {
-            return res.status(404).json({ error: 'Post not found' });
-        }
-        database_1.db.run('INSERT INTO likes (user_id, post_id) VALUES (?, ?)', [req.userId, req.params.postId], function (err) {
-            if (err) {
-                return res.status(500).json({ error: 'Error liking post' });
+// --- Like / Heart a Post ---
+router.post('/:postId/like', authenticate, async (req, res) => {
+    try {
+        const postId = parseInt(String(req.params.postId));
+        await database_1.db.like.upsert({
+            where: {
+                user_id_post_id: {
+                    user_id: req.userId,
+                    post_id: postId
+                }
+            },
+            update: {},
+            create: {
+                user_id: req.userId,
+                post_id: postId
             }
-            // Update like count
-            database_1.db.get('SELECT COUNT(*) as count FROM likes WHERE post_id = ?', [req.params.postId], (err, result) => {
-                res.json({ liked: true, likes: result.count });
-            });
         });
-    });
+        const count = await database_1.db.like.count({
+            where: { post_id: postId }
+        });
+        res.json({ liked: true, likes: count });
+    }
+    catch (err) {
+        console.error('Error liking post:', err);
+        res.status(500).json({ error: 'Error liking post' });
+    }
 });
 // Unlike a post
-router.delete('/:postId/like', authenticate, (req, res) => {
-    database_1.db.run('DELETE FROM likes WHERE user_id = ? AND post_id = ?', [req.userId, req.params.postId], function (err) {
-        if (err) {
-            return res.status(500).json({ error: 'Error unliking post' });
-        }
-        // Update like count
-        database_1.db.get('SELECT COUNT(*) as count FROM likes WHERE post_id = ?', [req.params.postId], (err, result) => {
-            res.json({ liked: false, likes: result.count });
+router.delete('/:postId/like', authenticate, async (req, res) => {
+    try {
+        const postId = parseInt(String(req.params.postId));
+        await database_1.db.like.deleteMany({
+            where: {
+                user_id: req.userId,
+                post_id: postId
+            }
         });
-    });
+        const count = await database_1.db.like.count({
+            where: { post_id: postId }
+        });
+        res.json({ liked: false, likes: count });
+    }
+    catch (err) {
+        console.error('Error unliking post:', err);
+        res.status(500).json({ error: 'Error unliking post' });
+    }
 });
 // Get comments for a post
-router.get('/:postId/comments', authenticate, (req, res) => {
-    database_1.db.all(`
-        SELECT c.*, u.username, u.avatar
-        FROM comments c
-        JOIN users u ON c.user_id = u.id
-        WHERE c.post_id = ?
-        ORDER BY c.created_at DESC
-    `, [req.params.postId], (err, comments) => {
-        if (err) {
-            return res.status(500).json({ error: 'Error getting comments' });
-        }
-        res.json(comments || []);
-    });
+router.get('/:postId/comments', authenticate, async (req, res) => {
+    try {
+        const postId = parseInt(String(req.params.postId));
+        const comments = await database_1.db.comment.findMany({
+            where: { post_id: postId },
+            orderBy: { created_at: 'desc' },
+            include: {
+                user: {
+                    select: {
+                        username: true,
+                        avatar: true
+                    }
+                }
+            }
+        });
+        const formattedComments = comments.map((c) => (Object.assign(Object.assign({}, c), { username: c.user.username, avatar: c.user.avatar })));
+        res.json(formattedComments);
+    }
+    catch (err) {
+        console.error('Error getting comments:', err);
+        res.status(500).json({ error: 'Error getting comments' });
+    }
 });
-// Add comment to a post
-router.post('/:postId/comments', authenticate, (req, res) => {
+// --- Add a Comment ---
+router.post('/:postId/comments', authenticate, async (req, res) => {
     const { text } = req.body;
+    const postId = parseInt(String(req.params.postId));
     if (!text || text.trim() === '') {
         return res.status(400).json({ error: 'Comment text is required' });
     }
-    database_1.db.get('SELECT id FROM posts WHERE id = ?', [req.params.postId], (err, post) => {
-        if (err || !post) {
-            return res.status(404).json({ error: 'Post not found' });
-        }
-        database_1.db.run('INSERT INTO comments (user_id, post_id, text) VALUES (?, ?, ?)', [req.userId, req.params.postId, text], function (err) {
-            if (err) {
-                return res.status(500).json({ error: 'Error adding comment' });
+    try {
+        const comment = await database_1.db.comment.create({
+            data: {
+                user_id: req.userId,
+                post_id: postId,
+                text
+            },
+            include: {
+                user: {
+                    select: {
+                        username: true,
+                        avatar: true
+                    }
+                }
             }
-            database_1.db.get(`
-                    SELECT c.*, u.username, u.avatar
-                    FROM comments c
-                    JOIN users u ON c.user_id = u.id
-                    WHERE c.id = ?
-                `, [this.lastID], (err, comment) => {
-                res.json(comment);
-            });
         });
-    });
+        res.json(Object.assign(Object.assign({}, comment), { username: comment.user.username, avatar: comment.user.avatar }));
+    }
+    catch (err) {
+        console.error('Error adding comment:', err);
+        res.status(500).json({ error: 'Error adding comment' });
+    }
 });
 // Delete comment
-router.delete('/comments/:commentId', authenticate, (req, res) => {
-    database_1.db.get('SELECT * FROM comments WHERE id = ?', [req.params.commentId], (err, comment) => {
-        if (err || !comment) {
+router.delete('/comments/:commentId', authenticate, async (req, res) => {
+    try {
+        const commentId = parseInt(String(req.params.commentId));
+        const comment = await database_1.db.comment.findUnique({
+            where: { id: commentId }
+        });
+        if (!comment) {
             return res.status(404).json({ error: 'Comment not found' });
         }
         if (comment.user_id !== req.userId) {
             return res.status(403).json({ error: 'Not authorized to delete this comment' });
         }
-        database_1.db.run('DELETE FROM comments WHERE id = ?', [req.params.commentId], (err) => {
-            res.json({ message: 'Comment deleted successfully' });
+        await database_1.db.comment.delete({
+            where: { id: commentId }
         });
-    });
+        res.json({ message: 'Comment deleted successfully' });
+    }
+    catch (err) {
+        console.error('Error deleting comment:', err);
+        res.status(500).json({ error: 'Error deleting comment' });
+    }
 });
 exports.default = router;
 //# sourceMappingURL=posts.js.map

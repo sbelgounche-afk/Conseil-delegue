@@ -1,0 +1,165 @@
+﻿node : C:\Users\pc\Desktop\instagram de ki
+lo\node_modules\@prisma\client\runtime\cli
+ent.js:70
+Au caractère Ligne:1 : 1
++ node dist/server.js > 
+test_no_arg_log.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~
+    + CategoryInfo          : NotSpecifie 
+   d: (C:\Users\pc\Des...me\client.js:70  
+  :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeComma 
+   ndError
+ 
+${n}`}var jl=require("@prisma/client-runti
+me-utils");function Ul(e){return 
+e.length===0?Promise.resolve([]):new 
+Promise((t,r)=>{let n=new Array(e.length),
+i=null,o=!1,s=0,a=()=>{o||(s++,s===e.lengt
+h&&(o=!0,i?r(i):t(n)))},l=u=>{o||(o=!0,r(u
+))};for(let u=0;u<e.length;u++)e[u].then(c
+=>{n[u]=c,a()},c=>{if(!(0,jl.hasBatchIndex
+)(c)){l(c);return}c.batchRequestIdx===u?l(
+c):(i||(i=c),a())})})}var 
+Ut=M("prisma:client");typeof globalThis=="
+object"&&(globalThis.NODE_CLIENT=!0);var R
+m={requestArgsToMiddlewareArgs:e=>e,middle
+wareArgsToRequestArgs:e=>e},km=Symbol.for(
+"prisma.client.transaction.id"),Im={id:0,n
+extId(){return++this.id}};function 
+Gl(e){class t{_originalClient=this;_runtim
+eDataModel;_requestHandler;_connectionProm
+ise;_disconnectionPromise;_engineConfig;_a
+ccelerateEngineConfig;_clientVersion;_erro
+rFormat;_tracingHelper;_previewFeatures;_a
+ctiveProvider;_globalOmit;_extensions;_eng
+ine;_appliedParent;_createPrismaPromise=pi
+();constructor(n){if(!n)throw new w.Prisma
+ClientInitializationError("`PrismaClient` 
+needs to be constructed with a non-empty, 
+valid `PrismaClientOptions`:\n\n```\nnew 
+PrismaClient({\n  
+...\n})\n```\n\nor\n\n```\nconstructor() 
+{\n  super({ ... });\n}\n```\n          ",
+yi);e=n.__internal?.configOverride?.(e)??e
+,ql(n,e);let i=new Hl.EventEmitter().on("e
+rror",()=>{});this._extensions=Ue.empty(),
+this._previewFeatures=e.previewFeatures,th
+is._clientVersion=e.clientVersion??yi,this
+._activeProvider=e.activeProvider,this._gl
+obalOmit=n?.omit,this._tracingHelper=Rl();
+let o;if(n.adapter){o=n.adapter;let s=e.ac
+tiveProvider==="postgresql"||e.activeProvi
+der==="cockroachdb"?"postgres":e.activePro
+vider;if(o.provider!==s)throw new 
+w.PrismaClientInitializationError(`The 
+Driver Adapter \`${o.adapterName}\`, 
+based on \`${o.provider}\`, is not 
+compatible with the provider \`${s}\` 
+specified in the Prisma 
+schema.`,this._clientVersion)}try{let s=n?
+?{},l=(s.__internal??{}).debug===!0;if(l&&
+M.enable("prisma:client"),s.errorFormat?th
+is._errorFormat=s.errorFormat:process.env.
+NODE_ENV==="production"?this._errorFormat=
+"minimal":process.env.NO_COLOR?this._error
+Format="colorless":this._errorFormat="colo
+rless",this._runtimeDataModel=e.runtimeDat
+aModel,this._engineConfig={enableDebugLogs
+:l,logLevel:s.log&&Il(s.log),logQueries:s.
+log&&!!(typeof s.log=="string"?s.log==="qu
+ery":s.log.find(u=>typeof u=="string"?u===
+"query":u.level==="query")),compilerWasm:e
+.compilerWasm,clientVersion:e.clientVersio
+n,previewFeatures:this._previewFeatures,ac
+tiveProvider:e.activeProvider,inlineSchema
+:e.inlineSchema,tracingHelper:this._tracin
+gHelper,transactionOptions:{maxWait:s.tran
+sactionOptions?.maxWait??2e3,timeout:s.tra
+nsactionOptions?.timeout??5e3,isolationLev
+el:s.transactionOptions?.isolationLevel},l
+ogEmitter:i,adapter:o,accelerateUrl:s.acce
+lerateUrl,sqlCommenters:s.comments,paramet
+erizationSchema:e.parameterizationSchema,r
+untimeDataModel:e.runtimeDataModel},this._
+accelerateEngineConfig=Object.create(this.
+_engineConfig),this._accelerateEngineConfi
+g.accelerateUtils={resolveDatasourceUrl:()
+=>{if(s.accelerateUrl)return 
+s.accelerateUrl;throw new w.PrismaClientIn
+itializationError(`\`accelerateUrl\` is 
+required when using 
+\`@prisma/extension-accelerate\`:
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                                          
+                             ^
+
+PrismaClientInitializationError: 
+`PrismaClient` needs to be constructed 
+with a non-empty, valid 
+`PrismaClientOptions`:
+
+```
+new PrismaClient({
+  ...
+})
+```
+
+or
+
+```
+constructor() {
+  super({ ... });
+}
+```
+          
+    at new t 
+(C:\Users\pc\Desktop\instagram de kilo\nod
+e_modules\@prisma\client\runtime\client.js
+:70:960)
+    at Object.<anonymous> 
+(C:\Users\pc\Desktop\instagram de 
+kilo\dist\database.js:10:16)
+    at Module._compile 
+(node:internal/modules/cjs/loader:1706:14)
+    at Object..js 
+(node:internal/modules/cjs/loader:1839:10)
+    at Module.load 
+(node:internal/modules/cjs/loader:1441:32)
+    at Function._load 
+(node:internal/modules/cjs/loader:1263:12)
+    at TracingChannel.traceSync 
+(node:diagnostics_channel:328:14)
+    at wrapModuleLoad 
+(node:internal/modules/cjs/loader:237:24)
+    at Module.require 
+(node:internal/modules/cjs/loader:1463:12)
+    at require 
+(node:internal/modules/helpers:147:16) {
+  clientVersion: '7.4.1',
+  errorCode: undefined,
+  retryable: undefined
+}
+
+Node.js v22.22.0

@@ -28,8 +28,13 @@ const uploadsDir = path_1.default.join(__dirname, '..', 'uploads');
 if (!fs_1.default.existsSync(uploadsDir)) {
     fs_1.default.mkdirSync(uploadsDir, { recursive: true });
 }
-// Initialize database
-(0, database_1.initDatabase)();
+// Initialize database and start server
+async function startServer() {
+    await (0, database_1.initDatabase)();
+    app.listen(PORT, () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+    });
+}
 // Routes
 app.use('/api/auth', auth_1.default);
 app.use('/api/users', users_1.default);
@@ -38,7 +43,5 @@ app.use('/api/posts', posts_1.default);
 app.get('/', (req, res) => {
     res.sendFile(path_1.default.join(__dirname, '..', 'index.html'));
 });
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+startServer();
 //# sourceMappingURL=server.js.map

@@ -1,0 +1,3 @@
+﻿Admin account created: username=admin, password=admin123
+Database connected and verified via Prisma
+Server running on http://localhost:3000

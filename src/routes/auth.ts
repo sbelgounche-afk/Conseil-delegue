@@ -2,7 +2,6 @@ import express, { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../database';
-import { User } from '../types/models';
 
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'instagram-clone-secret-key-2024';
@@ -12,137 +11,149 @@ interface JwtPayload {
     username: string;
 }
 
-// Register
-router.post('/register', (req: Request, res: Response) => {
+// --- User Registration ---
+// This route creates a new user account.
+router.post('/register', async (req: Request, res: Response) => {
     const { username, email, password, name, phone, age, grade, school } = req.body;
 
     if (!username || !email || !password) {
         return res.status(400).json({ error: 'Username, email and password are required' });
     }
 
-    // Check if user already exists
-    db.get('SELECT id FROM users WHERE username = ? OR email = ?', [username, email], (err, existingUser) => {
-        if (err) {
-            return res.status(500).json({ error: 'Database error' });
-        }
+    try {
+        // Check if user already exists
+        const existingUser = await db.user.findFirst({
+            where: {
+                OR: [
+                    { username },
+                    { email }
+                ]
+            }
+        });
 
         if (existingUser) {
             return res.status(400).json({ error: 'Username or email already exists' });
         }
 
         // Hash password
-        bcrypt.hash(password, 10, (err, hashedPassword) => {
-            if (err) {
-                return res.status(500).json({ error: 'Error hashing password' });
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create user
+        const user = await db.user.create({
+            data: {
+                username,
+                email,
+                password: hashedPassword,
+                name: name || username,
+                phone: phone || '',
+                age: age ? parseInt(age.toString()) : null,
+                grade: grade || '',
+                school: school || '',
+                avatar: '',
+                bio: '',
+                is_admin: 0
             }
-
-            // Insert user with new fields
-            db.run(
-                'INSERT INTO users (username, email, password, name, phone, age, grade, school) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                [username, email, hashedPassword, name || username, phone || '', age || null, grade || '', school || ''],
-                function (this: any, err: any) {
-                    if (err) {
-                        return res.status(500).json({ error: 'Error creating user' });
-                    }
-
-                    // Generate token
-                    const token = jwt.sign({ id: this.lastID, username }, JWT_SECRET, { expiresIn: '7d' });
-
-                    res.json({
-                        message: 'User created successfully',
-                        token,
-                        user: {
-                            id: this.lastID,
-                            username,
-                            email,
-                            name: name || username,
-                            phone: phone || '',
-                            age: age || null,
-                            grade: grade || '',
-                            school: school || '',
-                            avatar: '',
-                            bio: '',
-                            is_admin: 0
-                        }
-                    });
-                }
-            );
         });
-    });
+
+        // Generate token
+        const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+
+        const { password: _, ...userWithoutPassword } = user;
+
+        res.json({
+            message: 'User created successfully',
+            token,
+            user: userWithoutPassword
+        });
+    } catch (err) {
+        console.error('Registration error:', err);
+        res.status(500).json({ error: 'Error creating user' });
+    }
 });
 
-// Login
-router.post('/login', (req: Request, res: Response) => {
+// --- User Login ---
+// This route checks credentials and gives the user a "token" (JWT) so they can stay logged in.
+router.post('/login', async (req: Request, res: Response) => {
     const { username, password } = req.body;
 
     if (!username || !password) {
         return res.status(400).json({ error: 'Username and password are required' });
     }
 
-    db.get('SELECT * FROM users WHERE username = ? OR email = ?', [username, username], (err, user: User) => {
-        if (err) {
-            return res.status(500).json({ error: 'Database error' });
-        }
+    try {
+        const user = await db.user.findFirst({
+            where: {
+                OR: [
+                    { username },
+                    { email: username }
+                ]
+            }
+        });
 
         if (!user) {
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        bcrypt.compare(password, user.password!, (err, isMatch) => {
-            if (err) {
-                return res.status(500).json({ error: 'Error checking password' });
-            }
+        const isMatch = await bcrypt.compare(password, user.password);
 
-            if (!isMatch) {
-                return res.status(401).json({ error: 'Invalid credentials' });
-            }
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
 
-            const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+        const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
 
-            res.json({
-                message: 'Login successful',
-                token,
-                user: {
-                    id: user.id,
-                    username: user.username,
-                    email: user.email,
-                    name: user.name,
-                    phone: user.phone || '',
-                    age: user.age || null,
-                    grade: user.grade || '',
-                    school: user.school || '',
-                    avatar: user.avatar,
-                    bio: user.bio || '',
-                    is_admin: user.is_admin || 0
-                }
-            });
+        const { password: _, ...userWithoutPassword } = user;
+
+        res.json({
+            message: 'Login successful',
+            token,
+            user: userWithoutPassword
         });
-    });
+    } catch (err) {
+        console.error('Login error:', err);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
-// Verify token
-router.get('/verify', (req: Request, res: Response) => {
+// --- Token Verification ---
+// This route checks if a user's token is still valid.
+// Useful for keeping users logged in when they refresh the page.
+router.get('/verify', async (req: Request, res: Response) => {
     const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
         return res.status(401).json({ error: 'No token provided' });
     }
 
-    jwt.verify(token, JWT_SECRET, (err, decoded) => {
-        if (err) {
-            return res.status(401).json({ error: 'Invalid token' });
+    try {
+        const decoded = jwt.verify(token, JWT_SECRET) as JwtPayload;
+
+        const user = await db.user.findUnique({
+            where: { id: decoded.id },
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                name: true,
+                phone: true,
+                age: true,
+                grade: true,
+                school: true,
+                avatar: true,
+                bio: true,
+                is_admin: true,
+                created_at: true
+            }
+        });
+
+        if (!user) {
+            return res.status(401).json({ error: 'User not found' });
         }
 
-        const payload = decoded as JwtPayload;
-
-        db.get('SELECT id, username, email, name, phone, age, grade, school, avatar, bio, is_admin FROM users WHERE id = ?', [payload.id], (err, user: User) => {
-            if (err || !user) {
-                return res.status(401).json({ error: 'User not found' });
-            }
-
-            res.json({ user });
-        });
-    });
+        res.json({ user });
+    } catch (err) {
+        res.status(401).json({ error: 'Invalid token' });
+    }
 });
 
 export default router;

@@ -1,0 +1,26 @@
+﻿
+> instagram-clone-backend@1.0.0 build
+> tsc
+
+src/database.ts(4,16): error TS2554: Expected 1 arguments, but got 0.
+src/routes/posts.ts(221,33): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+  Type 'string[]' is not assignable to type 'string'.
+src/routes/posts.ts(258,33): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+  Type 'string[]' is not assignable to type 'string'.
+src/routes/posts.ts(287,33): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+  Type 'string[]' is not assignable to type 'string'.
+src/routes/posts.ts(309,33): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+  Type 'string[]' is not assignable to type 'string'.
+src/routes/posts.ts(339,29): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+  Type 'string[]' is not assignable to type 'string'.
+src/routes/users.ts(106,22): error TS2322: Type 'string | string[]' is not assignable to type 'string | undefined'.
+  Type 'string[]' is not assignable to type 'string'.
+src/routes/users.ts(148,25): error TS2339: Property '_count' does not exist on type '{ id: number; username: string; email: string; password: string; name: string | null; phone: string | null; age: number | null; grade: string | null; school: string | null; bio: string | null; avatar: string | null; is_admin: number; created_at: Date; }'.
+src/routes/users.ts(149,29): error TS2339: Property '_count' does not exist on type '{ id: number; username: string; email: string; password: string; name: string | null; phone: string | null; age: number | null; grade: string | null; school: string | null; bio: string | null; avatar: string | null; is_admin: number; created_at: Date; }'.
+src/routes/users.ts(150,29): error TS2339: Property '_count' does not exist on type '{ id: number; username: string; email: string; password: string; name: string | null; phone: string | null; age: number | null; grade: string | null; school: string | null; bio: string | null; avatar: string | null; is_admin: number; created_at: Date; }'.
+src/routes/users.ts(193,35): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+  Type 'string[]' is not assignable to type 'string'.
+src/routes/users.ts(228,35): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+  Type 'string[]' is not assignable to type 'string'.
+src/routes/users.ts(373,35): error TS2345: Argument of type 'string | string[]' is not assignable to parameter of type 'string'.
+  Type 'string[]' is not assignable to type 'string'.

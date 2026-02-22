@@ -1,5 +1,9 @@
-import sqlite3 from 'sqlite3';
-declare const db: sqlite3.Database;
-export declare function initDatabase(): void;
-export { db };
+import { PrismaClient } from '@prisma/client';
+declare const prisma: PrismaClient<import(".prisma/client").Prisma.PrismaClientOptions, never, import("@prisma/client/runtime/library").DefaultArgs>;
+/**
+ * Initializes the database.
+ * This function runs when the server starts.
+ */
+export declare function initDatabase(): Promise<void>;
+export { prisma as db };
 //# sourceMappingURL=database.d.ts.map

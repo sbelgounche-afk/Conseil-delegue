@@ -1,0 +1,2 @@
+﻿Database connected and verified via Prisma
+Server running on http://localhost:3000
