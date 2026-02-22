@@ -31,8 +31,19 @@ model User {
   posts      Post[]      // A user can have many posts
   comments   Comment[]   // A user can write many comments
   likes      Like[]      // A user can like many posts
+  stories    Story[]     // A user can have many stories
   followedBy Follow[]  @relation("following")
   following  Follow[]  @relation("follower")
+}
+
+// Represents a temporary story (expires in 24h)
+model Story {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  image      String
+  created_at DateTime  @default(now())
+
+  user       User      @relation(fields: [user_id], references: [id])
 }
 
 // Represents a post (photo + caption)

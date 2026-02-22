@@ -183,11 +183,42 @@ const api = {
     async addComment(postId, text) {
         const res = await fetch(`${API_URL}/posts/${postId}/comments`, {
             method: 'POST',
-            headers: { 
+            headers: {
                 ...appState.getAuthHeader(),
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ text })
+        });
+        return res.json();
+    },
+
+    // Stories
+    async getStories() {
+        const res = await fetch(`${API_URL}/stories`, {
+            headers: appState.getAuthHeader()
+        });
+        return res.json();
+    },
+
+    async createStory(formData) {
+        const res = await fetch(`${API_URL}/stories`, {
+            method: 'POST',
+            headers: appState.getAuthHeader(),
+            body: formData
+        });
+        return res.json();
+    },
+
+    async getExplore() {
+        const res = await fetch(`${API_URL}/posts/explore`, {
+            headers: appState.getAuthHeader()
+        });
+        return res.json();
+    },
+
+    async searchUsers(query) {
+        const res = await fetch(`${API_URL}/users/search?q=${query}`, {
+            headers: appState.getAuthHeader()
         });
         return res.json();
     }
@@ -202,22 +233,22 @@ const elements = {
     authScreen: document.getElementById('auth-screen'),
     signupScreen: document.getElementById('signup-screen'),
     mainApp: document.getElementById('main-app'),
-    
+
     // Auth forms
     loginForm: document.getElementById('login-form'),
     signupForm: document.getElementById('signup-form'),
     showSignup: document.getElementById('show-signup'),
     showLogin: document.getElementById('show-login'),
-    
+
     // Navigation
     navItems: document.querySelectorAll('.nav-item[data-view]'),
     views: document.querySelectorAll('.view'),
-    
+
     // Post elements
     postsFeed: document.getElementById('posts-feed'),
     exploreGrid: document.getElementById('explore-grid'),
     profilePosts: document.getElementById('profile-posts'),
-    
+
     // Create post
     createDropzone: document.getElementById('create-dropzone'),
     fileInput: document.getElementById('file-input'),
@@ -227,7 +258,7 @@ const elements = {
     createCaption: document.getElementById('create-caption'),
     sharePost: document.getElementById('share-post'),
     cancelCreate: document.getElementById('cancel-create'),
-    
+
     // Profile
     profileAvatar: document.getElementById('profile-avatar'),
     profileUsername: document.getElementById('profile-username'),
@@ -239,32 +270,37 @@ const elements = {
     editProfile: document.getElementById('edit-profile'),
     editProfileModal: document.getElementById('edit-profile-modal'),
     editProfileForm: document.getElementById('edit-profile-form'),
-    
+
     // Suggestions
     suggestionsList: document.getElementById('suggestions-list'),
-    
+
     // Modal
     postModal: document.getElementById('post-modal'),
     modalPost: document.getElementById('modal-post'),
     closeModal: document.querySelector('.close-modal'),
-    
+
     // Messages
     messageInput: document.getElementById('message-input'),
     sendMessage: document.getElementById('send-message'),
     chatMessages: document.getElementById('chat-messages'),
-    
+
     // Search
     searchInput: document.getElementById('search-input'),
-    
+
     // Toast
     toast: document.getElementById('toast'),
     toastMessage: document.getElementById('toast-message'),
-    
+
     // Logout
     logoutBtn: document.getElementById('logout-btn'),
-    
+
     // Current user avatar in nav
-    currentUserAvatar: document.getElementById('current-user-avatar')
+    currentUserAvatar: document.getElementById('current-user-avatar'),
+
+    // Stories
+    storiesList: document.getElementById('stories-list'),
+    addStoryBtn: document.getElementById('add-story-btn'),
+    storyUserAvatar: document.getElementById('story-user-avatar')
 };
 
 // ============================================
@@ -287,10 +323,10 @@ function showScreen(screenId) {
 function showView(viewId) {
     elements.views.forEach(v => v.classList.remove('active'));
     elements.navItems.forEach(n => n.classList.remove('active'));
-    
+
     const view = document.getElementById(`${viewId}-view`);
     const navItem = document.querySelector(`.nav-item[data-view="${viewId}"]`);
-    
+
     if (view) view.classList.add('active');
     if (navItem) navItem.classList.add('active');
 }
@@ -299,16 +335,16 @@ function formatTimeAgo(dateString) {
     const date = new Date(dateString);
     const now = new Date();
     const diff = now - date;
-    
+
     const minutes = Math.floor(diff / 60000);
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
-    
+
     if (minutes < 1) return 'Just now';
     if (minutes < 60) return `${minutes}m ago`;
     if (hours < 24) return `${hours}h ago`;
     if (days < 7) return `${days}d ago`;
-    
+
     return date.toLocaleDateString();
 }
 
@@ -320,18 +356,18 @@ async function handleLogin(e) {
     e.preventDefault();
     const username = document.getElementById('login-username').value;
     const password = document.getElementById('login-password').value;
-    
+
     const result = await api.login({ username, password });
-    
+
     if (result.error) {
         showToast(result.error);
         return;
     }
-    
+
     appState.saveToken(result.token);
     appState.currentUser = result.user;
     appState.isLoggedIn = true;
-    
+
     showScreen('main-app');
     showView('home');
     renderAll();
@@ -348,18 +384,18 @@ async function handleSignup(e) {
     const age = document.getElementById('signup-age').value;
     const grade = document.getElementById('signup-grade').value;
     const school = document.getElementById('signup-school').value;
-    
+
     const result = await api.register({ username, email, password, name, phone, age, grade, school });
-    
+
     if (result.error) {
         showToast(result.error);
         return;
     }
-    
+
     appState.saveToken(result.token);
     appState.currentUser = result.user;
     appState.isLoggedIn = true;
-    
+
     showScreen('main-app');
     showView('home');
     renderAll();
@@ -376,13 +412,13 @@ async function logout() {
 
 async function checkAuth() {
     if (!appState.token) return false;
-    
+
     const result = await api.verify();
     if (result.error) {
         appState.clearToken();
         return false;
     }
-    
+
     appState.currentUser = result.user;
     return true;
 }
@@ -393,15 +429,15 @@ async function checkAuth() {
 
 async function renderPosts() {
     if (!appState.isLoggedIn) return;
-    
+
     const posts = await api.getFeed();
     appState.posts = posts;
-    
+
     if (!posts || posts.length === 0) {
         elements.postsFeed.innerHTML = '<p style="text-align:center;padding:40px;color:#8e8e8e;">No posts yet. Follow some users or create your first post!</p>';
         return;
     }
-    
+
     elements.postsFeed.innerHTML = posts.map(post => {
         const commentsHtml = (post.comments || []).slice(0, 2).map(c => `
             <div class="post-comment">
@@ -409,7 +445,7 @@ async function renderPosts() {
                 ${c.text}
             </div>
         `).join('');
-        
+
         return `
             <article class="post" data-post-id="${post.id}">
                 <header class="post-header">
@@ -444,56 +480,137 @@ async function renderPosts() {
             </article>
         `;
     }).join('');
-    
+
     // Add event listeners for likes
     document.querySelectorAll('.like-btn').forEach(btn => {
         btn.addEventListener('click', handleLike);
     });
-    
+
     // Add event listeners for comment inputs
     document.querySelectorAll('.post-comment-input input').forEach(input => {
         input.addEventListener('input', handleCommentInput);
     });
-    
+
     // Add event listeners for comment buttons
     document.querySelectorAll('.post-comment-btn').forEach(btn => {
         btn.addEventListener('click', handleComment);
     });
-    
+
     // Add event listeners for post images (modal)
     document.querySelectorAll('.post-image').forEach(img => {
         img.addEventListener('click', openPostModal);
     });
 }
 
-function renderExplore() {
-    // Show placeholder for explore - users can populate with their posts
-    const exploreImages = [
-        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400',
-        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400',
-        'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400',
-        'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=400',
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
-        'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400'
-    ];
-    
-    elements.exploreGrid.innerHTML = exploreImages.map((img, idx) => `
-        <div class="explore-item" data-index="${idx}">
-            <img src="${img}" alt="Explore">
+async function renderExplore() {
+    if (!appState.isLoggedIn) return;
+
+    const posts = await api.getExplore();
+
+    if (!posts || posts.length === 0) {
+        elements.exploreGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #8e8e8e;">No explore posts available yet.</p>';
+        return;
+    }
+
+    elements.exploreGrid.innerHTML = posts.map(post => `
+        <div class="explore-item" data-post-id="${post.id}">
+            <img src="${post.image}" alt="Explore">
             <div class="explore-overlay">
-                <span><i class="fas fa-heart"></i> ${Math.floor(Math.random() * 500) + 100}</span>
-                <span><i class="fas fa-comment"></i> ${Math.floor(Math.random() * 50) + 10}</span>
+                <span><i class="fas fa-heart"></i> ${post.like_count || 0}</span>
+                <span><i class="fas fa-comment"></i> ${post.comment_count || 0}</span>
             </div>
         </div>
     `).join('');
+
+    // Add click handlers for explore items
+    document.querySelectorAll('.explore-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const postId = item.dataset.postId;
+            openPostModalById(postId);
+        });
+    });
+}
+
+async function renderStories() {
+    if (!appState.isLoggedIn) return;
+
+    const storyGroups = await api.getStories();
+
+    // Update "Your Story" avatar
+    if (appState.currentUser && elements.storyUserAvatar) {
+        elements.storyUserAvatar.src = appState.currentUser.avatar || 'https://via.placeholder.com/100';
+    }
+
+    if (!storyGroups || storyGroups.length === 0) {
+        // Keep only the "Add Story" button
+        const addBtn = elements.storiesList.querySelector('.add-story');
+        elements.storiesList.innerHTML = '';
+        elements.storiesList.appendChild(addBtn);
+        return;
+    }
+
+    const storiesHtml = storyGroups.map(group => `
+        <div class="story" data-user-id="${group.user.id}">
+            <div class="story-ring">
+                <img src="${group.user.avatar || 'https://via.placeholder.com/100'}" alt="${group.user.username}">
+            </div>
+            <span>${group.user.username}</span>
+        </div>
+    `).join('');
+
+    const addBtn = elements.storiesList.querySelector('.add-story');
+    elements.storiesList.innerHTML = '';
+    elements.storiesList.appendChild(addBtn);
+    elements.storiesList.insertAdjacentHTML('beforeend', storiesHtml);
+
+    // Add click event for viewing stories (to be implemented)
+    document.querySelectorAll('.story:not(.add-story)').forEach(story => {
+        story.addEventListener('click', () => {
+            const userId = story.dataset.userId;
+            const group = storyGroups.find(g => g.user.id == userId);
+            viewStory(group);
+        });
+    });
+}
+
+function viewStory(group) {
+    if (!group || !group.items || group.items.length === 0) return;
+
+    // Simple story viewer using a modal-like behavior for now
+    showToast(`Viewing stories from ${group.user.username}...`);
+    // Full story viewer would need a separate UI component
+}
+
+async function createNewStory() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            showToast('Uploading story...');
+            const result = await api.createStory(formData);
+
+            if (!result.error) {
+                showToast('Story shared! ✨');
+                renderStories();
+            } else {
+                showToast(result.error);
+            }
+        }
+    };
+    input.click();
 }
 
 async function renderProfile() {
     if (!appState.currentUser) return;
-    
+
     const user = appState.currentUser;
     const userPosts = await api.getUserPosts(user.id);
-    
+
     elements.profileAvatar.src = user.avatar || 'https://via.placeholder.com/200';
     elements.profileUsername.textContent = user.username;
     elements.profileName.textContent = user.name || user.username;
@@ -501,7 +618,7 @@ async function renderProfile() {
     elements.postCount.textContent = userPosts?.length || 0;
     elements.followerCount.textContent = (user.followers || 0).toLocaleString();
     elements.followingCount.textContent = user.following || 0;
-    
+
     // Render profile posts
     elements.profilePosts.innerHTML = (userPosts || []).map(post => `
         <div class="profile-post" data-post-id="${post.id}">
@@ -512,7 +629,7 @@ async function renderProfile() {
             </div>
         </div>
     `).join('');
-    
+
     // Add click handlers for profile posts
     document.querySelectorAll('.profile-post').forEach(post => {
         post.addEventListener('click', () => {
@@ -524,12 +641,12 @@ async function renderProfile() {
 
 async function renderSuggestions() {
     const suggestions = await api.getSuggestions();
-    
+
     if (!suggestions || suggestions.length === 0) {
         elements.suggestionsList.innerHTML = '<p style="padding:10px;color:#8e8e8e;">No suggestions available</p>';
         return;
     }
-    
+
     elements.suggestionsList.innerHTML = suggestions.map(s => `
         <div class="suggestion-item">
             <img src="${s.avatar || 'https://via.placeholder.com/32'}" alt="${s.username}">
@@ -540,14 +657,14 @@ async function renderSuggestions() {
             <button class="follow-suggestion-btn" data-user-id="${s.id}" data-username="${s.username}">Follow</button>
         </div>
     `).join('');
-    
+
     // Add follow button handlers
     document.querySelectorAll('.follow-suggestion-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
             e.stopPropagation();
             const userId = btn.dataset.userId;
             const username = btn.dataset.username;
-            
+
             if (btn.textContent === 'Follow') {
                 await api.followUser(userId);
                 btn.textContent = 'Following';
@@ -562,13 +679,14 @@ async function renderSuggestions() {
 
 async function renderAll() {
     await renderPosts();
+    await renderStories();
     renderExplore();
     await renderProfile();
     await renderSuggestions();
-    
+
     // Update current user avatar in nav
     elements.currentUserAvatar.src = appState.currentUser?.avatar || 'https://via.placeholder.com/24';
-    
+
     // Show/hide admin nav based on user role
     const adminNavItem = document.getElementById('admin-nav-item');
     if (adminNavItem) {
@@ -581,18 +699,18 @@ async function renderAdmin() {
         showView('home');
         return;
     }
-    
+
     const stats = await api.getAdminStats();
     if (stats.error) {
         showToast(stats.error);
         return;
     }
-    
+
     document.getElementById('stat-total-users').textContent = stats.totalUsers || 0;
     document.getElementById('stat-total-posts').textContent = stats.totalPosts || 0;
     document.getElementById('stat-total-likes').textContent = stats.totalLikes || 0;
     document.getElementById('stat-total-comments').textContent = stats.totalComments || 0;
-    
+
     // Render grade stats
     const gradeStatsDiv = document.getElementById('grade-stats');
     if (stats.usersByGrade && stats.usersByGrade.length > 0) {
@@ -605,7 +723,7 @@ async function renderAdmin() {
     } else {
         gradeStatsDiv.innerHTML = '<p>No grade data available</p>';
     }
-    
+
     // Render all users
     const users = await api.getAllUsers();
     const usersBody = document.getElementById('admin-users-body');
@@ -623,7 +741,7 @@ async function renderAdmin() {
                 </td>
             </tr>
         `).join('');
-        
+
         // Add delete handlers
         document.querySelectorAll('.delete-user-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
@@ -651,7 +769,7 @@ async function renderAdmin() {
 async function handleLike(e) {
     const postId = e.target.dataset.postId;
     const post = appState.posts.find(p => p.id == postId);
-    
+
     if (post.liked) {
         const result = await api.unlikePost(postId);
         if (!result.error) {
@@ -681,7 +799,7 @@ async function handleComment(e) {
     const postId = e.target.dataset.postId;
     const input = document.querySelector(`.post-comment-input input[data-post-id="${postId}"]`);
     const text = input.value.trim();
-    
+
     if (text) {
         const result = await api.addComment(postId, text);
         if (!result.error) {
@@ -701,7 +819,7 @@ function openPostModal(e) {
 function openPostModalById(postId) {
     const post = appState.posts.find(p => p.id == postId);
     if (!post) return;
-    
+
     elements.modalPost.innerHTML = `
         <img src="${post.image}" alt="Post">
         <div class="post-header">
@@ -721,7 +839,7 @@ function openPostModalById(postId) {
             `).join('')}
         </div>
     `;
-    
+
     elements.postModal.classList.add('active');
 }
 
@@ -746,7 +864,7 @@ function handleFileSelect(e) {
 function loadImageFromUrl() {
     const urlInput = document.getElementById('image-url-input');
     const url = urlInput.value.trim();
-    
+
     if (url) {
         elements.previewImage.src = url;
         elements.createPreview.style.display = 'block';
@@ -761,7 +879,7 @@ function removeImage() {
     elements.createDropzone.style.display = 'block';
     elements.fileInput.value = '';
     elements.createCaption.value = '';
-    
+
     // Clear URL input
     const urlInput = document.getElementById('image-url-input');
     if (urlInput) urlInput.value = '';
@@ -771,36 +889,36 @@ async function shareNewPost() {
     const file = elements.fileInput.files[0];
     const caption = elements.createCaption.value.trim();
     const imageSrc = elements.previewImage.src;
-    
+
     // Check if image is from URL or file upload
     let isUrlImage = false;
     if (imageSrc && !imageSrc.startsWith('data:') && imageSrc !== window.location.href) {
         isUrlImage = true;
     }
-    
+
     if (!file && !imageSrc) {
         showToast('Please add an image');
         return;
     }
-    
+
     const formData = new FormData();
-    
+
     if (file) {
         formData.append('image', file);
     } else if (isUrlImage) {
         // For URL images, we store the URL directly
         formData.append('image', imageSrc);
     }
-    
+
     formData.append('caption', caption);
-    
+
     const result = await api.createPost(formData);
-    
+
     if (result.error) {
         showToast(result.error);
         return;
     }
-    
+
     removeImage();
     showView('home');
     renderAll();
@@ -810,7 +928,7 @@ async function shareNewPost() {
 // Edit profile handlers
 function openEditProfile() {
     if (!appState.currentUser) return;
-    
+
     document.getElementById('edit-name').value = appState.currentUser.name || '';
     document.getElementById('edit-username').value = appState.currentUser.username || '';
     document.getElementById('edit-bio').value = appState.currentUser.bio || '';
@@ -819,21 +937,21 @@ function openEditProfile() {
 
 async function handleEditProfile(e) {
     e.preventDefault();
-    
+
     const name = document.getElementById('edit-name').value;
     const bio = document.getElementById('edit-bio').value;
     const avatarFile = document.getElementById('avatar-upload').files[0];
-    
+
     const formData = new FormData();
     formData.append('name', name);
     formData.append('bio', bio);
-    
+
     if (avatarFile) {
         formData.append('avatar', avatarFile);
     }
-    
+
     const result = await api.updateProfile(formData);
-    
+
     if (!result.error) {
         appState.currentUser = { ...appState.currentUser, ...result };
         renderAll();
@@ -853,26 +971,51 @@ function sendMessage() {
         messageDiv.innerHTML = `<div class="bubble">${text}</div>`;
         elements.chatMessages.appendChild(messageDiv);
         elements.messageInput.value = '';
-        
+
         elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
-        
-        setTimeout(() => {
-            const responseDiv = document.createElement('div');
-            responseDiv.className = 'message received';
-            responseDiv.innerHTML = `
-                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100" alt="User">
-                <div class="bubble">That sounds awesome! Let me know when you finish it! 😊</div>
-            `;
-            elements.chatMessages.appendChild(responseDiv);
-            elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
-        }, 1500);
     }
 }
 
 // Search
-function handleSearch(e) {
-    const query = e.target.value.toLowerCase();
-    // Search functionality can be expanded
+async function handleSearch(e) {
+    const query = e.target.value.trim();
+    const resultsContainer = document.getElementById('search-results');
+
+    if (query.length < 1) {
+        // Restore default categories if needed or just clear
+        resultsContainer.innerHTML = '<p style="padding: 20px; color: #8e8e8e;">Enter a username to search...</p>';
+        return;
+    }
+
+    const users = await api.searchUsers(query);
+
+    if (!users || users.length === 0) {
+        resultsContainer.innerHTML = '<p style="padding: 20px; color: #8e8e8e;">No users found.</p>';
+        return;
+    }
+
+    resultsContainer.innerHTML = `
+        <div class="search-users-list">
+            ${users.map(u => `
+                <div class="message-item" onclick="viewUserProfile('${u.username}')">
+                    <img src="${u.avatar || 'https://via.placeholder.com/56'}" alt="${u.username}" style="width: 44px; height: 44px; border-radius: 50%;">
+                    <div class="message-info">
+                        <span class="username">${u.username}</span>
+                        <span class="message-preview">${u.name || ''}</span>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function viewUserProfile(username) {
+    elements.searchInput.value = '';
+    // This is a bit of a hack to change view, should use a proper router
+    showView('profile');
+    // We would need a separate function to fetch and render *any* profile, not just current user
+    // For now, let's just toast
+    showToast(`Redirecting to ${username}'s profile...`);
 }
 
 // ============================================
@@ -882,19 +1025,19 @@ function handleSearch(e) {
 async function init() {
     // Check if user is logged in
     const isAuthenticated = await checkAuth();
-    
+
     if (isAuthenticated) {
         showScreen('main-app');
         showView('home');
     } else {
         showScreen('auth-screen');
     }
-    
+
     // Render all components
     if (isAuthenticated) {
         renderAll();
     }
-    
+
     // Event listeners for auth
     elements.loginForm.addEventListener('submit', handleLogin);
     elements.signupForm.addEventListener('submit', handleSignup);
@@ -906,7 +1049,7 @@ async function init() {
         e.preventDefault();
         showScreen('auth-screen');
     });
-    
+
     // Navigation
     elements.navItems.forEach(item => {
         item.addEventListener('click', (e) => {
@@ -920,13 +1063,13 @@ async function init() {
             }
         });
     });
-    
+
     // Logout
     elements.logoutBtn.addEventListener('click', (e) => {
         e.preventDefault();
         logout();
     });
-    
+
     // Modal close
     elements.closeModal.addEventListener('click', closePostModal);
     elements.postModal.addEventListener('click', (e) => {
@@ -934,7 +1077,7 @@ async function init() {
             closePostModal();
         }
     });
-    
+
     // Edit profile modal
     elements.editProfile.addEventListener('click', openEditProfile);
     elements.editProfileForm.addEventListener('submit', handleEditProfile);
@@ -946,26 +1089,31 @@ async function init() {
             elements.editProfileModal.classList.remove('active');
         }
     });
-    
+
     // Create post
     elements.createDropzone.addEventListener('click', () => {
         elements.fileInput.click();
     });
     elements.fileInput.addEventListener('change', handleFileSelect);
     elements.removeImage.addEventListener('click', removeImage);
-    
+
+    // Create story
+    if (elements.addStoryBtn) {
+        elements.addStoryBtn.addEventListener('click', createNewStory);
+    }
+
     // Load URL button
     const loadUrlBtn = document.getElementById('load-url-btn');
     if (loadUrlBtn) {
         loadUrlBtn.addEventListener('click', loadImageFromUrl);
     }
-    
+
     elements.sharePost.addEventListener('click', shareNewPost);
     elements.cancelCreate.addEventListener('click', () => {
         removeImage();
         showView('home');
     });
-    
+
     // Messages
     elements.sendMessage.addEventListener('click', sendMessage);
     elements.messageInput.addEventListener('keypress', (e) => {
@@ -973,10 +1121,10 @@ async function init() {
             sendMessage();
         }
     });
-    
+
     // Search
     elements.searchInput.addEventListener('input', handleSearch);
-    
+
     // Close modals on escape key
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {

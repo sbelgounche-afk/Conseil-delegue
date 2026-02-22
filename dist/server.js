@@ -11,6 +11,7 @@ const database_1 = require("./database");
 const auth_1 = __importDefault(require("./routes/auth"));
 const users_1 = __importDefault(require("./routes/users"));
 const posts_1 = __importDefault(require("./routes/posts"));
+const stories_1 = __importDefault(require("./routes/stories"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 // Middleware
@@ -39,6 +40,7 @@ async function startServer() {
 app.use('/api/auth', auth_1.default);
 app.use('/api/users', users_1.default);
 app.use('/api/posts', posts_1.default);
+app.use('/api/stories', stories_1.default);
 // Serve index.html for root
 app.get('/', (req, res) => {
     res.sendFile(path_1.default.join(__dirname, '..', 'index.html'));

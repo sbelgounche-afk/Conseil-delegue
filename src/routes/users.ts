@@ -244,47 +244,49 @@ router.delete('/follow/:userId', authenticate, async (req: AuthRequest, res: Res
     }
 });
 
-// Get suggested users
+// 4. API: Suggestions (users the current user might want to follow)
 router.get('/suggestions', authenticate, async (req: AuthRequest, res: Response) => {
     try {
-        const users = await db.user.findMany({
+        const userId = req.userId!;
+        // Fetch 5 random users the current user is not following yet
+        // Exclude the current user themselves and also exclude admin accounts
+        const suggestions = await db.user.findMany({
             where: {
-                id: { not: req.userId },
+                id: { not: userId },
+                is_admin: 0, // [FIX] Hide admins from suggestions
                 followedBy: {
-                    none: { follower_id: req.userId }
+                    none: {
+                        follower_id: userId
+                    }
                 }
             },
             select: {
                 id: true,
                 username: true,
-                name: true,
-                avatar: true,
-                bio: true
+                avatar: true
             },
             take: 5
         });
-        res.json(users);
-    } catch (err) {
-        console.error('Error getting suggestions:', err);
-        res.status(500).json({ error: 'Error getting suggestions' });
+
+        res.json(suggestions);
+    } catch (error) {
+        console.error('Suggestions error:', error);
+        res.status(500).json({ error: 'Failed to fetch suggestions' });
     }
 });
 
-// Search users
-router.get('/search', async (req: any, res: Response) => {
-    const q = req.query.q as string;
-
-    if (!q) {
-        return res.json([]);
-    }
-
+// 5. API: Search Users
+router.get('/search', authenticate, async (req: AuthRequest, res: Response) => {
     try {
+        const query = req.query.q as string;
+        if (!query) {
+            return res.json([]);
+        }
+
         const users = await db.user.findMany({
             where: {
-                OR: [
-                    { username: { contains: q } },
-                    { name: { contains: q } }
-                ]
+                username: { contains: query },
+                is_admin: 0 // [FIX] Hide admins from search
             },
             select: {
                 id: true,
@@ -294,10 +296,11 @@ router.get('/search', async (req: any, res: Response) => {
             },
             take: 10
         });
+
         res.json(users);
-    } catch (err) {
-        console.error('Error searching users:', err);
-        res.status(500).json({ error: 'Error searching users' });
+    } catch (error) {
+        console.error('Search error:', error);
+        res.status(500).json({ error: 'Search failed' });
     }
 });
 

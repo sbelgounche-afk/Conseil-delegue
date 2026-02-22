@@ -66,6 +66,11 @@ const authenticate = (req: AuthRequest, res: Response, next: NextFunction) => {
 router.get('/feed', authenticate, async (req: AuthRequest, res: Response) => {
     try {
         const posts = await db.post.findMany({
+            where: {
+                user: {
+                    is_admin: 0 // [FIX] Exclude admin posts from feed
+                }
+            },
             take: 50,
             orderBy: { created_at: 'desc' },
             include: {
@@ -397,6 +402,44 @@ router.delete('/comments/:commentId', authenticate, async (req: AuthRequest, res
     } catch (err) {
         console.error('Error deleting comment:', err);
         res.status(500).json({ error: 'Error deleting comment' });
+    }
+});
+
+// --- Explore Feed ---
+// This route gets random posts to show in the explore grid.
+router.get('/explore', authenticate, async (req: AuthRequest, res: Response) => {
+    try {
+        const posts = await db.post.findMany({
+            where: {
+                user: {
+                    is_admin: 0 // Exclude admin posts
+                }
+            },
+            take: 30,
+            orderBy: { created_at: 'desc' }, // For now just newest, could be randomized
+            select: {
+                id: true,
+                image: true,
+                _count: {
+                    select: {
+                        postLikes: true,
+                        comments: true
+                    }
+                }
+            }
+        });
+
+        const formattedPosts = posts.map((post: any) => ({
+            id: post.id,
+            image: post.image,
+            like_count: post._count.postLikes,
+            comment_count: post._count.comments
+        }));
+
+        res.json(formattedPosts);
+    } catch (err) {
+        console.error('Error getting explore feed:', err);
+        res.status(500).json({ error: 'Error getting explore feed' });
     }
 });
 

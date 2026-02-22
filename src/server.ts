@@ -7,6 +7,7 @@ import { initDatabase } from './database';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import postRoutes from './routes/posts';
+import storiesRoutes from './routes/stories';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -43,6 +44,7 @@ async function startServer() {
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/stories', storiesRoutes);
 
 // Serve index.html for root
 app.get('/', (req: Request, res: Response) => {
