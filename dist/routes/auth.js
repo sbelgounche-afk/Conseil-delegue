@@ -56,7 +56,7 @@ router.post('/register', async (req, res) => {
                 age: age ? parseInt(age.toString()) : null,
                 grade: grade || '',
                 school: school || '',
-                avatar: '',
+                avatar: '/uploads/default-avatar.svg',
                 bio: '',
                 is_admin: 0
             }

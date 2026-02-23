@@ -495,7 +495,7 @@ async function renderPosts() {
         return `
             <article class="post" data-post-id="${post.id}">
                 <header class="post-header">
-                    <img src="${post.avatar || 'https://via.placeholder.com/32'}" alt="${post.username}">
+                    <img src="${post.avatar || '/uploads/default-avatar.svg'}" alt="${post.username}">
                     <span class="username">${post.username}</span>
                     <i class="fas fa-ellipsis-h options"></i>
                 </header>
@@ -584,7 +584,7 @@ async function renderStories() {
 
     // Update "Your Story" avatar
     if (appState.currentUser && elements.storyUserAvatar) {
-        elements.storyUserAvatar.src = appState.currentUser.avatar || 'https://via.placeholder.com/100';
+        elements.storyUserAvatar.src = appState.currentUser.avatar || '/uploads/default-avatar.svg';
     }
 
     if (!storyGroups || storyGroups.length === 0) {
@@ -598,7 +598,7 @@ async function renderStories() {
     const storiesHtml = storyGroups.map(group => `
         <div class="story" data-user-id="${group.user.id}">
             <div class="story-ring">
-                <img src="${group.user.avatar || 'https://via.placeholder.com/100'}" alt="${group.user.username}">
+                <img src="${group.user.avatar || '/uploads/default-avatar.svg'}" alt="${group.user.username}">
             </div>
             <span>${group.user.username}</span>
         </div>
@@ -657,7 +657,7 @@ async function renderProfile() {
     const user = appState.currentUser;
     const userPosts = await api.getUserPosts(user.id);
 
-    elements.profileAvatar.src = user.avatar || 'https://via.placeholder.com/200';
+    elements.profileAvatar.src = user.avatar || '/uploads/default-avatar.svg';
     elements.profileUsername.textContent = user.username;
     elements.profileName.textContent = user.name || user.username;
     elements.profileBio.innerHTML = (user.bio || 'No bio yet').replace(/\n/g, '<br>');
@@ -695,7 +695,7 @@ async function renderSuggestions() {
 
     elements.suggestionsList.innerHTML = suggestions.map(s => `
         <div class="suggestion-item">
-            <img src="${s.avatar || 'https://via.placeholder.com/32'}" alt="${s.username}">
+            <img src="${s.avatar || '/uploads/default-avatar.svg'}" alt="${s.username}">
             <div class="suggestion-info">
                 <span class="username">${s.username}</span>
                 <span class="followers">Suggested for you</span>
@@ -732,7 +732,7 @@ async function renderAll() {
     await renderGroups();
 
     // Update current user avatar in nav
-    elements.currentUserAvatar.src = appState.currentUser?.avatar || 'https://via.placeholder.com/24';
+    elements.currentUserAvatar.src = appState.currentUser?.avatar || '/uploads/default-avatar.svg';
 
     // Show/hide admin nav based on user role
     const adminNavItem = document.getElementById('admin-nav-item');
@@ -870,7 +870,7 @@ function openPostModalById(postId) {
     elements.modalPost.innerHTML = `
         <img src="${post.image}" alt="Post">
         <div class="post-header">
-            <img src="${post.avatar || 'https://via.placeholder.com/32'}" alt="${post.username}">
+            <img src="${post.avatar || '/uploads/default-avatar.svg'}" alt="${post.username}">
             <span class="username">${post.username}</span>
         </div>
         <div class="modal-comments">
@@ -982,7 +982,7 @@ function openEditProfile() {
     elements.editAge.value = appState.currentUser.age || '';
     elements.editSchool.value = appState.currentUser.school || '';
     elements.editGrade.value = appState.currentUser.grade || '';
-    elements.editAvatarPreview.src = appState.currentUser.avatar || 'https://via.placeholder.com/100';
+    elements.editAvatarPreview.src = appState.currentUser.avatar || '/uploads/default-avatar.svg';
 
     elements.editProfileModal.classList.add('active');
 }
@@ -1156,7 +1156,7 @@ async function handleSearch(e) {
         <div class="search-users-list">
             ${users.map(u => `
                 <div class="message-item" onclick="viewUserProfile('${u.username}')">
-                    <img src="${u.avatar || 'https://via.placeholder.com/56'}" alt="${u.username}" style="width: 44px; height: 44px; border-radius: 50%;">
+                    <img src="${u.avatar || '/uploads/default-avatar.svg'}" alt="${u.username}" style="width: 44px; height: 44px; border-radius: 50%;">
                     <div class="message-info">
                         <span class="username">${u.username}</span>
                         <span class="message-preview">${u.name || ''}</span>

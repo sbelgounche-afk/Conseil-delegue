@@ -175,7 +175,8 @@ router.put('/profile', posts_1.authenticate, upload.single('avatar'), async (req
             updateData.avatar = '/uploads/' + req.file.filename;
         }
         else if (avatar !== undefined) {
-            updateData.avatar = avatar;
+            // If explicitly set to empty string, reset to default
+            updateData.avatar = avatar.trim() === '' ? '/uploads/default-avatar.svg' : avatar;
         }
         const user = await database_1.db.user.update({
             where: { id: req.userId },

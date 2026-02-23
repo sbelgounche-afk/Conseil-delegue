@@ -23,7 +23,7 @@ model User {
   grade      String?
   school     String?
   bio        String?   @default("")
-  avatar     String?   @default("")
+  avatar     String?   @default("/uploads/default-avatar.svg")
   is_admin   Int       @default(0) // 1 for Admin, 0 for regular user
   created_at DateTime  @default(now())
 
