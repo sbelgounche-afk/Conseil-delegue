@@ -30,6 +30,18 @@ router.post('/register', async (req, res) => {
     if (!username || !email || !password) {
         return res.status(400).json({ error: 'Username, email and password are required' });
     }
+    if (!name || !name.trim()) {
+        return res.status(400).json({ error: 'Full name is required' });
+    }
+    if (!age) {
+        return res.status(400).json({ error: 'Age is required' });
+    }
+    if (!grade || !grade.trim()) {
+        return res.status(400).json({ error: 'Grade is required' });
+    }
+    if (!school || !school.trim()) {
+        return res.status(400).json({ error: 'School is required' });
+    }
     try {
         // Check if user already exists
         const existingUser = await database_1.db.user.findFirst({

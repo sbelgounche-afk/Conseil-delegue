@@ -215,14 +215,14 @@
                                         placeholder="+212 6xx xxx xxx">
                                 </div>
                                 <div class="auth-field">
-                                    <label class="auth-label">Age (optional)</label>
+                                    <label class="auth-label">Age</label>
                                     <input type="number" id="signup-age" class="auth-input" placeholder="Age" min="6"
-                                        max="25">
+                                        max="25" required>
                                 </div>
                                 <div class="auth-field">
                                     <label class="auth-label">Grade / Niveau</label>
-                                    <select id="signup-grade" class="auth-input">
-                                        <option value="">Select grade...</option>
+                                    <select id="signup-grade" class="auth-input" required>
+                                        <option value="" disabled selected>Select grade...</option>
                                         <option value="1ère année collège">1ère année collège</option>
                                         <option value="2ème année collège">2ème année collège</option>
                                         <option value="3ème année collège">3ème année collège</option>
@@ -231,9 +231,9 @@
                                     </select>
                                 </div>
                                 <div class="auth-field auth-field-full">
-                                    <label class="auth-label">School / École (optional)</label>
+                                    <label class="auth-label">School / École</label>
                                     <input type="text" id="signup-school" class="auth-input"
-                                        placeholder="Your school name">
+                                        placeholder="Your school name" required>
                                 </div>
                                 <div class="auth-field auth-field-full">
                                     <label class="auth-label">Password</label>
@@ -631,27 +631,64 @@
 
         // Tab switching within auth cards
         document.addEventListener('DOMContentLoaded', function () {
-            // Wire up tab buttons on login screen
+
+            // Reset a card's tab indicator & active button to the correct tab
+            function resetCard(screen, tab) {
+                var card = screen.querySelector('.auth-card');
+                if (!card) return;
+                card.querySelector('.auth-tab-indicator').style.transform =
+                    tab === 'register' ? 'translateX(100%)' : 'translateX(0)';
+                card.querySelectorAll('.auth-tab-btn').forEach(function (b) {
+                    b.classList.toggle('auth-tab-active', b.getAttribute('data-auth-tab') === tab);
+                });
+            }
+
+            // Animated screen switcher
+            function goToAuthScreen(tab) {
+                var loginScreen = document.getElementById('auth-screen');
+                var signupScreen = document.getElementById('signup-screen');
+                var outScreen = tab === 'login' ? signupScreen : loginScreen;
+                var inScreen = tab === 'login' ? loginScreen : signupScreen;
+
+                if (!outScreen.classList.contains('active')) return; // already on target
+
+                // Reset the incoming card before it appears
+                resetCard(inScreen, tab);
+
+                // --- 1. Fade OUT the current screen ---
+                outScreen.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
+                outScreen.style.opacity = '0';
+                outScreen.style.transform = 'translateY(-14px) scale(0.97)';
+                outScreen.style.pointerEvents = 'none';
+
+                // Prepare the incoming screen (invisible, offset below)
+                inScreen.classList.add('active');
+                inScreen.style.transition = 'none';
+                inScreen.style.opacity = '0';
+                inScreen.style.transform = 'translateY(14px) scale(0.97)';
+                inScreen.style.pointerEvents = 'none';
+
+                // --- 2. After fade-out, hide outgoing & animate incoming ---
+                setTimeout(function () {
+                    outScreen.classList.remove('active');
+                    outScreen.style.cssText = ''; // clear all inline styles
+
+                    requestAnimationFrame(function () {
+                        inScreen.style.transition = 'opacity 0.28s ease, transform 0.28s ease';
+                        inScreen.style.opacity = '1';
+                        inScreen.style.transform = 'translateY(0) scale(1)';
+                        inScreen.style.pointerEvents = '';
+
+                        // Clean up inline styles once done
+                        setTimeout(function () { inScreen.style.cssText = ''; }, 320);
+                    });
+                }, 230);
+            }
+
+            // Tab buttons in both cards
             document.querySelectorAll('[data-auth-tab]').forEach(function (btn) {
                 btn.addEventListener('click', function () {
-                    const tab = btn.getAttribute('data-auth-tab');
-                    // Find the card this button belongs to
-                    const card = btn.closest('.auth-card');
-                    const indicator = card.querySelector('.auth-tab-indicator');
-                    const btns = card.querySelectorAll('.auth-tab-btn');
-                    btns.forEach(function (b) { b.classList.remove('auth-tab-active'); });
-                    btn.classList.add('auth-tab-active');
-                    if (indicator) {
-                        indicator.style.transform = tab === 'register' ? 'translateX(100%)' : 'translateX(0)';
-                    }
-                    // Switch screens
-                    if (tab === 'login') {
-                        document.getElementById('auth-screen').classList.add('active');
-                        document.getElementById('signup-screen').classList.remove('active');
-                    } else {
-                        document.getElementById('signup-screen').classList.add('active');
-                        document.getElementById('auth-screen').classList.remove('active');
-                    }
+                    goToAuthScreen(btn.getAttribute('data-auth-tab'));
                 });
             });
 
@@ -660,8 +697,7 @@
             if (showSignup) {
                 showSignup.addEventListener('click', function (e) {
                     e.preventDefault();
-                    document.getElementById('auth-screen').classList.remove('active');
-                    document.getElementById('signup-screen').classList.add('active');
+                    goToAuthScreen('register');
                 });
             }
 
@@ -670,8 +706,7 @@
             if (showLogin) {
                 showLogin.addEventListener('click', function (e) {
                     e.preventDefault();
-                    document.getElementById('signup-screen').classList.remove('active');
-                    document.getElementById('auth-screen').classList.add('active');
+                    goToAuthScreen('login');
                 });
             }
         });

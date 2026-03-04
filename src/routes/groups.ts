@@ -138,7 +138,7 @@ router.get('/', authenticate, async (req: AuthRequest, res: Response) => {
 // 2. API: Get group messages
 router.get('/:groupId/messages', authenticate, async (req: AuthRequest, res: Response) => {
     try {
-        const groupId = parseInt(req.params.groupId);
+        const groupId = parseInt(String(req.params.groupId));
         const userId = req.userId!;
 
         // Security: Check if user is a member
@@ -174,7 +174,7 @@ router.get('/:groupId/messages', authenticate, async (req: AuthRequest, res: Res
 // 3. API: Send message to group
 router.post('/:groupId/messages', authenticate, async (req: AuthRequest, res: Response) => {
     try {
-        const groupId = parseInt(req.params.groupId);
+        const groupId = parseInt(String(req.params.groupId));
         const userId = req.userId!;
         const { text } = req.body;
 

@@ -126,7 +126,7 @@ router.get('/', posts_1.authenticate, async (req, res) => {
 // 2. API: Get group messages
 router.get('/:groupId/messages', posts_1.authenticate, async (req, res) => {
     try {
-        const groupId = parseInt(req.params.groupId);
+        const groupId = parseInt(String(req.params.groupId));
         const userId = req.userId;
         // Security: Check if user is a member
         const membership = await database_1.db.groupMember.findUnique({
@@ -158,7 +158,7 @@ router.get('/:groupId/messages', posts_1.authenticate, async (req, res) => {
 // 3. API: Send message to group
 router.post('/:groupId/messages', posts_1.authenticate, async (req, res) => {
     try {
-        const groupId = parseInt(req.params.groupId);
+        const groupId = parseInt(String(req.params.groupId));
         const userId = req.userId;
         const { text } = req.body;
         if (!text || text.trim() === '') {
