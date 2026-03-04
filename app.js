@@ -1,4 +1,4 @@
-// Instagram Clone - Frontend Application
+// Nimova - Frontend Application
 // Connected to Node.js + SQLite Backend
 
 const API_URL = '/api';
@@ -445,7 +445,7 @@ async function handleSignup(e) {
     showScreen('main-app');
     showView('home');
     renderAll();
-    showToast('Welcome to Instagram! 🎉');
+    showToast('Welcome to Nimova! 🎉');
 }
 
 async function logout() {
