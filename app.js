@@ -361,6 +361,18 @@ function showToast(message, duration = 3000) {
     }, duration);
 }
 
+function updateBadge(badgeId, count) {
+    const badge = document.getElementById(badgeId);
+    if (!badge) return;
+    if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = 'inline-block';
+    } else {
+        badge.style.display = 'none';
+        badge.textContent = '0';
+    }
+}
+
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
@@ -733,6 +745,11 @@ async function renderAll() {
 
     // Update current user avatar in nav
     elements.currentUserAvatar.src = appState.currentUser?.avatar || '/uploads/default-avatar.svg';
+
+    // Since there's no backend endpoint for unread counts yet, default to hidden.
+    // The fetch logic goes here when the backend supports it.
+    updateBadge('message-badge', 0);
+    updateBadge('notif-badge', 0);
 
     // Show/hide admin nav based on user role
     const adminNavItem = document.getElementById('admin-nav-item');
